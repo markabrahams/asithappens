@@ -1,0 +1,29 @@
+/*
+ * AllTests.java
+ *
+ * Created on 26 January 2005, 01:37
+ */
+
+package nz.co.abrahams.asithappens;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
+/**
+ *
+ * @author mark
+ */
+public class AllTests {
+    
+    /** Creates a new instance of AllTests */
+    public AllTests() {
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new TestSuite("Test for nz.co.abrahams.asithappens");
+        suite.addTestSuite(DataPointTest.class);
+        suite.addTestSuite(DataSetTest.class);
+        suite.addTestSuite(FlowTest.class);
+        return suite;
+    }
+}

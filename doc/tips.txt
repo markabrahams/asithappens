@@ -1,0 +1,123 @@
+AsItHappens Usage Tips (version 0.57)
+======================
+
+Here are some usage tips for AsItHappens:
+
+Configuration
+=============
+- AsItHappens used to be somewhat usable without a database - this is no longer the case
+- the embedded "H2" database is now included with AsItHappens and used by default
+- the MySQL database option will possibly be removed at some point in the future
+- the embedded H2 database requires no manual set up, so should always be available
+- the database schema changes significantly in the 0.40 release - backward compatibility is not
+  maintained at present
+- the "defaults.properties" and "asithappens.properties" files contains some options that AsItHappens
+  reads at start-up
+- properties in "asithappens.properties" override those in "default.properties" so it is recommended
+  that you put all your desired modifications into "asithappens.properties" and leave "default.properties"
+  as is
+- AsItHappens must be restarted for any new properties file settings to take effect
+
+General usage
+=============
+- double-click on a graph to create a text label for that part of the graph
+- press "o" on a graph to produce a set of changeable graph properties
+- press "l" on a graph to produce a list of any text labels defined - you can delete labels from here
+- press "d" on a graph to show the underlying graph data - mainly for debugging
+- press "s" on a graph to show summary statistics for the data displayed in the current graph view
+- press "n" on a graph to Defend Your Network
+- AsItHappens can poll on some graph types in the order of milliseconds.  This has the potential to hose
+  your network if you're too aggresive.  The good thing is that with AsItHappens you'll be able measure
+  exactly _how_ badly you've hosed your network.
+
+Response collection
+===================
+- response information can be collected from any device that can respond to ICMP echo requests (ping)
+- there are two response collection options, one that can be used on any platform ("generic"), and one that can
+  only be used when AsItHappens runs on Windows ("windows")
+- you can change the collector used in the "asithappens.properties" file using either of the following lines:
+     collector.response.class = generic
+     collector.response.class = windows
+- the "windows" collector is guaranteed to use ICMP for response collection
+- the "generic" collector uses a Java method (isReachable) that uses ICMP if it can, but uses TCP echo if ICMP
+  is unavailable
+- under Unix, the "generic" collector will probably use TCP echo unless AsItHappens is run as the root user,
+  since ICMP sockets are generally only available to root
+- a timeout is represented by a value of half the polling interval
+
+Bandwidth collection
+====================
+- bandwidth collection requires SNMP read-only access
+- default collection uses the 32-bit counters from the standard MIB-2 interface table (ifTable), which are
+  available on most SNMP-capable devices
+- if selected by checkbox, collection can use 64-bit counters from the ifXTable - this requires the device
+  to support SNMPv2c AND to include the 64-bit counters (ifHCInOctets/ifHCOutOctets) within the ifXTable
+- collecting from 64-bit counters is useful when analyzing high-throughput interfaces, to avoid wrapping of
+  32-bit counters, however a number of devices I have observed do not update the 64-counters as frequently
+  as they do the 32-bit counters, hence even if the 64-bit counters are available, they do not necessarily
+  produce the best results - because of this I have left the use of 64-bit counters as an interface option
+- the Net-SNMP "snmpd" agent seems to default to caching interface statistics for 15 seconds - to disable this
+  behaviour use the command:
+     snmpset -v 2c -c private hostname nsCacheTimeout.1.3.6.1.2.1.2.2 = 0
+- SNMP interface counters on some Cisco routers don't update very quickly - some platform accept this undocumented
+  command to adjust the update frequency of the SNMP variables (update interval is in hundredths of a second):
+     snmp-server hc poll <update-interval>
+- if you are using a 1.5 JRE, enumerating ports won't work unless you put this line in your
+  asithappens.properties file:
+     device.ports.ifalias = 0
+
+Host collection
+===============
+- there are three different MIB locations available to collect processor and memory usage information from:
+  Host Resources, Net-SNMP and Cisco (select the appropriate one from the drop-down menu)
+- some collection types require resource enumeration and selection, but you will be prompted for this where
+  appropriate
+- all of these collection types requires SNMP read-only access
+
+NBAR collection
+===============
+- NBAR (Network Based Application Response) is a Cisco technology only available on Cisco routers that breaks
+  traffic into a fixed set of protocol groups, storing per-protocol statistics
+- NBAR collection only works on Cisco routers with IOS version of 12.2(15)T or greater
+- the NBAR collector requires SNMP read-write access - a read-only string will fail
+- for NBAR to work, you first need to configure "ip nbar protocol-discovery" on the target interface
+- you can create multiple NBAR collection sessions against the same device concurrently
+
+Netflow collection
+==================
+- NetFlow is a Cisco technology only available on Cisco routers that categorizes traffic into "flow records",
+  storing per-flow statistics
+- NetFlow collection only works on Cisco routers with IOS version 12.3(11)T or greater
+- the Netflow collector requires SNMP read-write access - a read-only string will fail
+- CEF (Cisco Express Forwarding) should be enabled on the router to ensure complete collection of Netflow statistics
+- the collector reconfigures Netflow on the selected router interface if necessary, and attempts to restore
+  the original state of Netflow when the collection is finished (i.e. when the graph is closed)
+- it is not recommended that you create multiple NetFlow collection sessions against the same
+  device concurrently
+- the format for Netflow legend values is as follows:
+    ip_protocol[tos_byte] src_address(src_port) -> dst_address(dst_port)
+- the "Categorize by" options enable you to group similar flows as part of a single data set
+- the "Match Criteria" enable you to specify only certain flows to analyze
+
+OID collection
+==============
+- ensure that the SNMP type for each OID is specified correctly
+- only Integer32, Counter32 and Counter64 SNMP types are supported
+
+Capture
+=======
+- the "Capture" function can be run against a packet capture (e.g. created from tcpdump) - AsItHappens can
+  not create capture files itself
+- the "Fetch boundary times" simply fills in the dates/times for the start and end of the capture file 
+- the "Categorize by" options enable you to group similar flows as part of a single data set
+- the y-axis scale is now "bits per second"
+
+Layouts
+=======
+- layouts are collections of graphs
+- the "current layout" (i.e. the current collection of graphs) can be saved as a newly named layout
+- the current layout can also overwrite an existing layout selected from the layout list
+- when a previously saved layout is restored, AsItHappens loads the stored graphs without closing down
+  existing graph windows
+- only "collector" graphs are supported for inclusion in layouts at present; retrieved "sessions"
+  and capture graphs are excluded

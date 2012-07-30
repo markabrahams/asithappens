@@ -1,0 +1,12 @@
+Testsuite: nz.co.abrahams.asithappens.DatabaseCreateTest
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.637 sec
+------------- Standard Output ---------------
+/home/mark/asithappens/asithappens/test/db/create/asithappens.index.db
+/home/mark/asithappens/asithappens/test/db/create/asithappens.5.log.db
+/home/mark/asithappens/asithappens/test/db/create/asithappens.7328925649831215636.temp.db
+/home/mark/asithappens/asithappens/test/db/create/asithappens.trace.db
+/home/mark/asithappens/asithappens/test/db/create/asithappens.lock.db
+/home/mark/asithappens/asithappens/test/db/create/asithappens.data.db
+------------- ---------------- ---------------
+
+Testcase: testCreate took 0.637 sec

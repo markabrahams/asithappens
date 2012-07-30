@@ -1,0 +1,23 @@
+/*
+ * DataSetsTest.java
+ * JUnit based test
+ *
+ * Created on 3 September 2006, 22:30
+ */
+
+package nz.co.abrahams.asithappens;
+
+/**
+ *
+ * @author mark
+ */
+public class DataSetsTest extends junit.framework.TestCase {
+    
+    public DataSetsTest(String testName) {
+        super(testName);
+    }
+    
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+    
+}

@@ -1,0 +1,39 @@
+body {
+	padding-left: 11em;
+	font-family: Georgia, "Times New Roman",
+	Times, serif;
+}
+.navigation {
+	position: absolute;
+	width: 140px;
+	height: 500%;
+	top: 0px;
+	left: 0px;
+	padding-top: 10px;
+	padding-left: 10px;
+	background-color: #e5e9ff;
+	border-right: dotted 2px black;
+}
+.menu {
+	padding: 4px;
+	margin: 3px;
+	line-height: 200%;
+}
+ul.menu {
+	list-style-type: none
+}
+body>.navigation {
+	position: fixed;
+}
+h1 {
+	font-family: Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+}
+#logo {
+	padding-top: 10px;
+	padding-left: 10px;
+}
+.sdntable {
+	margin: 20px;
+}
+

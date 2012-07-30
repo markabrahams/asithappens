@@ -1,0 +1,367 @@
+0.57 release
+============
+
+Bug fixes:
+Fixed failure to produce popup menu for right-click on time-series data panel
+
+Added features:
+Added summary statistics and data table creation as tabs in graph window
+Added sortable columns to summary statistics (suggested by Imtiaz Shameem)
+Added automatic updating of summary statistics (suggested by Imtiaz Shameem)
+
+Code changes:
+Classes deleted: DBAccess
+Classes added: TextFormatter, ButtonTabComponent, SummaryStatisticsPanel,
+               SummaryStatisticsUpdaterThread, DataFramePanel, TimeSeriesContainerPanel,
+               PopupMouseAdapter, TimeSeriesDataMouseAdapter, TimeSeriesKeyAdapter
+
+0.56 release
+============
+
+Bug fixes:
+Fixed incorrect start time of stored session graphs
+Fixed NetFlow and NBAR graphs all green (reported by Peter Williams and Imtiaz Shameem)
+Fixed data export failure bug (reported by Duy Bui Nguyen Doan)
+Restored logo image in About panel (reported by Jono Armstrong)
+
+Added features:
+Added ability to store custom OID graph data into a session
+
+Code changes:
+Created sub-packages
+Changed Configuration class to a singleton pattern
+Removed state from DatabaseCreate class (now all static fields/methods)
+Replaced Device class SNMP methods with technology-specific SNMP classes
+Migrated JUnit test classes to version 4
+Classes added: SNMPInterface, BandwidthSNMP, MemoryCiscoSNMP, MemoryHRSNMP, MemoryUDCSNMP,
+               ProcessorCiscoSNMP, ProcessorHRSNMP, ProcessorUDCSNMP, NBARSNMP, NetFlowSNMP,
+               DataCollectorDAOType
+
+0.55 release
+============
+
+Added features:
+Added ability to graph arbitraty OID values from an SNMP MIB (suggested by Andrew Cosgriff)
+
+Code changes:
+Classes added: GraphOptions, GraphOptionsDAO, CustomOID, CustomOIDCollector, CustomOIDDialog,
+               CustomOIDTableModel, CustomOIDTemplate, MainOIDPanel
+
+0.54 release
+============
+
+Bug fixes:
+Fixed port enumeration failure on lack of ifAlias entries
+Fixed storing of read-write community strings
+Fixed inability to enter finish time in Sessions panel
+Fixed x-axis scaling when loading stored graphs is incorrect
+Fixed ignoring of aggregation and interpolation settings when loading graphs in "Sessions" panel
+Fixed failure to initialize NBAR and Netflow graphs
+Enforced minimum size of Application window
+Enforced minimum panel size of graphs
+
+Added features:
+Added ability to specifiy "grounded" or "stacked" set display in graphs
+Added ability to change color of data sets in a graph
+
+Code changes:
+Implemented separate persistence layer using DAO pattern
+Classes added: BandwidthCollectorDAO, DAOCreationException, DAOFactory, DataCollectorDAO,
+               DataGraphDAO, DataHeadingsDAO, DataLabelsDAO, DataPointDAO, DataSetDAO,
+               DataSetsDAO, DeviceDAO, FlowOptionsDAO, LayoutDAO, MemoryCiscoCollectorDAO,
+               MemoryHRCollectorDAO, MemoryUCDCollectorDAO, NBARCollectorDAO, NetFlowCollectorDAO,
+               NetFlowMatchCriteriaDAO, ProcessorCiscoCollectorDAO, ProcessorHRCollectorDAO,
+               ProcessorUCDCollectorDAO, ResponseCollectorDAO, ResponseWindowsCollectorDAO,
+               SetDisplayDAO, DBUtil
+
+
+0.53 release
+============
+
+Bug fixes:
+Fixed sessions updater NullPointerException when opening with empty database
+Fixed error message due to sessions updater not shutting down cleanly
+Fixed ClassCastException causing NBAR and NetFlow failure to launch with ifAlias option
+
+
+0.52 release
+============
+
+Bug fixes:
+Fixed default scaling threshold from being too low
+Fixed deselection of session produces spurious error dialog
+
+Added features:
+Added option to include ifAlias information in port list (suggested by Ken Cathcart and Kristian Larsson)
+Added automatic updating of session information (removed the "Reset dates" and "Refresh Sessions" buttons)
+Added ability to delete multiple sessions from database
+Added sorting of sessions by collection start time
+
+Code changes:
+Port enumeration now shares the same code across the three panels that use it
+Classes added: PortsSelectorPanel, PortsSelectorModel, PortsSelectorTableModel
+
+
+0.51 release
+============
+
+Bug fixes:
+Fixed Level 9 boss definition
+
+
+0.50 release
+============
+
+Bug fixes:
+Fixed spelling mistake in progress bar
+Fixed x-axis labels bleed into each other
+Fixed inconsistent x-axis scaling and graph data for real-time graphs
+Fixed start-up error messages for database lock and configuration file reading problems
+
+Added features:
+Added Self Defending Network
+
+Code changes:
+Added Self Defending Network package "sdn"
+
+
+0.41 release
+============
+
+Bug fixes:
+Fixed start-up error for JRE 5.0
+
+
+0.40 release
+============
+
+Bug fixes:
+Fixed NBAR initialization crash bug
+Fixed NetFlow match address bug causing inability to shut graph (again)
+Fixed race condition in displaying and collecting data causing concurrent access exception
+Fixed memory leak causing OutOfMemory error when collecting into database
+Fixed bug with MySQL database existence checking and automatic creation dialog at startup
+
+Added features:
+Added saving and restoring of "layouts", which are collections of graph windows (suggested by Paul O'Brien)
+Added option for embedded H2 database - now default database instead of external MySQL database
+Added SNMP community string "remembering" (suggested by Jono Armstrong)
+Added configuration option to change ordering of right-hand legend keys according to volume
+Added configuration option to disable NetFlow interface state restoration, or to always disable Netflow when complete
+Consolidated horizontal and vertical "in front / behind" graph option to a single option
+Changed name of "Database" tab to "Sessions"
+
+Code changes:
+Classes added: DataCollectorResponse, Layout, MainLayoutPanel
+
+
+0.35 release
+============
+
+Bug fixes:
+Included tips documentation to automated installers
+Fixed NetFlow match address bug causing inability to shut graph
+
+Added features:
+Added "show trim" graph option useful for hiding trim for small graphs
+
+Code changes:
+Classes added: InvalidInputException
+Classes removed: FlowGraph
+
+
+0.34 release
+============
+
+Bug fixes:
+Fixed crash due to incorrect parsing of number format for graph top option
+
+Added features:
+Changed polling interval unit for some graphs to milliseconds to allow sub-second polling
+Added progress bar and concurrency for long tasks to reduce extended interface freezes
+
+Code changes:
+Changed threading model for data collection/display
+Changed Windows start-up script to dynamically build classpath from library directory
+Changed memory/storage graphs to solid-fill
+Update JNetStream library to version 0.2.4
+Classes added: ProgressBar, DataSetsLoadTask, PacketTraceLoadTask, SwingWorker
+
+
+0.33 release
+============
+
+Bug fixes:
+Fixed port enumeration failures on some devices with inconsistent MIB information (reported by Susan Breckenridge)
+Fixed off-by-one error in calculating NBAR table index maximum
+Fixed Host Resources processor graph creation failure
+Fixed Net-SNMP memory statistics off by a factor of 1000
+
+Code changes:
+Updated snmp4j library to version 1.7.4a
+Added Ant task to create javadoc
+Fixed many documentation errors
+Added more unit tests for DataSet class
+Classes added: SNMPType, SNMPScopeException
+
+
+0.32 release
+============
+
+Added features:
+Added detection/support for SNMPv2c
+Added bandwidth collection from 64-bit interface counters (suggested by Matt Peterson)
+Added icon association for application frames (suggested by Thierry Uso)
+Added simple statistical analysis - minimum, maximum, average (suggested by Karl Bousader)
+Added aggregated interface collection (suggested by Matt Peterson)
+Added number formatting/alignment in data dump table
+
+Bug fixes:
+Fixed bandwidth collection rounding error causing erroneously high values (reported by Abigail Whyld)
+Fixed lack of error reporting when Netflow MIB information was not found (reported by Todd Doolittle)
+Fixed lack of error dialog when user selects database tab and database is not available (reported by Thierry Uso)
+
+Code changes:
+Classes added: SummaryStatistics, SummaryStatisticsFrame
+
+
+0.31 release
+============
+
+Added features:
+Added MySQL database run-time check and initialization
+
+Bug fixes:
+Fixed retrieval of large amounts of data with skipped values causes only partial graph to display
+Fixed table display of large retrieved amounts of data with skipped values
+Fixed table display of time-specified collection subset would not narrow the data to the time period
+Fixed data export did nothing bug
+Fixed Windows response graph went to continuous time-out (high value) bug
+
+Code changes:
+Classes added: DatabaseCreate, DatabaseCreateDialog
+
+
+0.3 release
+===========
+
+Added features:
+Added automated installer files for Unix and Windows
+Added CPU usage polling from Host Resources MIB
+Added memory usage polling from Host Resources MIB
+Added CPU usage polling from Net-SNMP MIB
+Added memory usage polling from Net-SNMP MIB
+Added CPU usage polling from old Cisco CPU MIB
+Added memory usage polling from Cisco memory MIB
+Added batch file to start application under Windows (suggested by Ronny Boesger)
+Added right-click popup menu for options, label table and data table
+Added data export of stored sessions to CSV
+Added scroll pane to data table to improve display for a large number of data sets
+Changed units for capture graph to bps
+Removed zero-value horizontal grid line to show collection of zero values better
+Added pingicmp.dll as a JRE resource removing the need to copy it to a system folder
+
+Bug fixes:
+Fixed retrieval of large amounts of data causes out-of-memory error
+Fixed deletion of label for non-storing graph bug
+Fixed capture graph out-of-memory error (JNetStream library update)
+Fixed capture graph handling non-TCP/UDP packets bug with source/destination port option selected
+Fixed Netflow description for protocols other than TCP/UDP
+Fixed Netflow and NBAR wrong initial graph data and x-axis scale
+
+Code changes:
+Fixed bug in build script that failed to create "dist" directory - project builds from scratch now
+Renamed the "junittest" build target to "testconsole"
+Added DataType class for type-based options template
+Removed DataCollector creation from DataSets - the external caller must create the collector
+Added JUnit test suites for DataPoint, DataSet and PacketTraceIterator
+Removed superfluous empty JUnit test classes
+Added JUnit AllTests with all completed JUnit test suites
+Changed build script to reference supplied JUnit jar (it previously referenced a NetBeans jar)
+Classes added: DataType, MainHostPanel, MemoryCiscoCollector, MemoryHRCollector,
+               MemoryUCDCollector, ProcessorCiscoCollector, ProcessorHRCollector,
+	       ProcessorHRCollector, DataSet
+
+
+0.2 release
+===========
+
+Added features:
+Changed main interface to tabbed pane
+Added NetFlow MIB Top-N graphing
+Added NBAR MIB Top-N graphing
+Added packet capture graphing attempt - extremely non-functional and needs fixing
+Added generic response collector (without Windows dependency)
+Added rudimentary "dump state" function to graphs to report their data
+Added JTable model for database session view and database update for titles
+Added ability to create labels on graph area
+Added ability to give a graph a title
+Added minor graph marks to x-axis and y-axis and main graph panel
+Added options dialog to change graph settings on-the-fly
+Added manual y-axis fixing
+Added "sticky window" feature to graphs
+Added optional horizontal and vertical grid-lines to graph panel
+Added properties file application configuration
+Added Windows installation script (non-interactive)
+Added some log4j logging
+
+Bug fixes:
+Fixed BandwidthCollector timeout "spikes" due to incorrect time calculation
+Fixed y-axis scaling for perfect power of 10 bug
+Fixed several PingICMP problems by implementing single listener thread
+Fixed interface enumeration bug by using SNMP getNext
+Fixed single database handle locking problem
+
+Code changes:
+Cleaned up object interfaces and hid internal object variables
+Improved exception propagation and handling
+Added jar file build to ANT
+Classes added: ColorConstant, Configuration, DataLabel, DataLabels, DataPoint,
+               DatabaseException, Device, Flow, FlowData, FlowOptions, GraphContext,
+               GraphOptionsDialog, LabelTableDialog, LegendPanel,
+               MainBandwidthPanel, MainCapturePanel, MainDatabasePanel,
+               MainNBARPanel, MainNetFlowPanel, MainTabbedPanel,
+               NBARCollector, NetFlowCollector, NetFlowMatchCriteria,
+               NetFlowMatchDialog, NetFlowMatchPanel, NetFlowMatchRecord,
+               PacketTraceIterator, SNMPAccess, SNMPException, SessionsTableModel
+Classes removed: BandwidthData, BandwidthGraph, CollectorGraph, HistoricalChooser,
+                 ResponseData, ResponseGraph
+
+
+0.1 release
+===========
+
+New features:
+Changed application name from "Portmon" to "AsItHappens"
+Added interpolation in SummaryData
+Added "Reset Dates" and "Refresh Sessions" buttons beside "Delete Sessions" button in HistoricalChooser
+Added an "are you sure?" dialog for the "Delete Session" button
+Added date-based selection in HistoricalChooser
+Added x-axis crunching in graphs out of HistoricalChooser
+Added name resolution to ResponseGraph
+Added database query and display tool
+Added database "save" function for graphs
+Added x-axis absolute time markings
+Added x-axis scaling of data
+
+Bug fixes:
+Fixed outside of date range bug by adding bounds checking in HistoricalChooser
+Fixed MultiGraphPanel bug when encountering a Double.NaN value
+Fixed x-axis scaling for days-worth of data
+Fixed interface counter "clocking" handling
+Fixed the unselection of "Store collected data" in Portmon
+Fixed aggregation selection
+Fixed "null" display of port in HistoricalChooser
+Fixed "null" device value in DB for ResponseCollector
+Fixed delete sessions while still collecting for that session bug
+Fixed historical graph widths
+
+Code changes:
+Created a CollectorGraph superclass for ResponseGraph and PortGraph
+Deleted findMaximum functions for DataSet class
+Changed poll interval units from seconds to milliseconds
+Added column count code to DatabaseAccess.addValues
+Hid internal data structures of DataSets and provide getValue-style interface
+Changed to fully-qualified package name "nz.co.abrahams.asithappens"
+Implemented ANT build script
+Classes added: DatabaseAccess, HistoricalChooser, SummaryData

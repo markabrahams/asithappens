@@ -1,0 +1,65 @@
+/*
+ * PacketTraceIteratorTest.java
+ * JUnit based test
+ *
+ * Created on 2 May 2005, 23:34
+ */
+
+package nz.co.abrahams.asithappens;
+
+import junit.framework.*;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.BasicConfigurator;
+import com.voytechs.jnetstream.io.StreamFormatException;
+import com.voytechs.jnetstream.io.EOPacketStream;
+import com.voytechs.jnetstream.io.EOPacket;
+import com.voytechs.jnetstream.io.RawformatInputStream;
+import com.voytechs.jnetstream.io.PacketInputStream;
+import com.voytechs.jnetstream.npl.SyntaxError;
+import com.voytechs.jnetstream.primitive.MacAddressPrimitive;
+import com.voytechs.jnetstream.primitive.IpAddressPrimitive;
+
+/**
+ *
+ * @author mark
+ */
+public class PacketTraceIteratorTest extends TestCase {
+    
+    protected static final String FILENAME = "test/data/sample.pkt";
+    protected PacketTraceIterator iterator;
+    
+    public PacketTraceIteratorTest(String testName) {
+        super(testName);
+        BasicConfigurator.configure();
+    }
+
+    protected void setUp() throws java.lang.Exception {
+        iterator = new PacketTraceIterator(FILENAME);
+    }
+
+    protected void tearDown() throws java.lang.Exception {
+    }
+
+    public static junit.framework.Test suite() {
+        junit.framework.TestSuite suite = new junit.framework.TestSuite(PacketTraceIteratorTest.class);
+        return suite;
+    }
+
+    /**
+     * Test of nextPacket method, of class nz.co.abrahams.asithappens.PacketTraceParser.
+     */
+    public void testNext() {
+        Flow flow;
+        System.out.println("testNext");
+        flow = iterator.next();
+        flow = iterator.next();
+        flow = iterator.next();
+    }
+    
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+    
+}

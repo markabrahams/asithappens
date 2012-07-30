@@ -1,0 +1,162 @@
+/*
+ * DataSetTest.java
+ * JUnit based test
+ *
+ * Created on 21 March 2006, 23:26
+ */
+
+package nz.co.abrahams.asithappens;
+
+import junit.framework.*;
+import java.util.*;
+
+/**
+ *
+ * @author mark
+ */
+public class DataSetTest extends TestCase {
+    
+    protected static long START_TIME = 1141991986200L;
+    protected static long FINISH_TIME = 1141991988200L;
+    protected static long TIME_INCREMENT = 2000;
+    
+    protected static double INITIAL_VALUE = 400D;
+    protected static double VALUE_INCREMENT = 100D;
+    
+    protected DataSet emptySet;
+    protected DataSet singleNanSet;
+    protected DataSet multipleNanSet;
+    protected DataSet singlePointSet;
+    protected DataSet multiplePointSet;
+    
+    public DataSetTest(String testName) {
+        super(testName);
+    }
+
+    protected void setUp() throws java.lang.Exception {
+        
+        emptySet = new DataSet();
+        
+        singleNanSet = new DataSet();
+        singleNanSet.add(new DataPoint(START_TIME));
+        
+        multipleNanSet = new DataSet();
+        multipleNanSet.add(new DataPoint(START_TIME));
+        multipleNanSet.add(new DataPoint(START_TIME + TIME_INCREMENT));
+        multipleNanSet.add(new DataPoint(START_TIME + 2 * TIME_INCREMENT));
+        
+        singlePointSet = new DataSet();
+        singlePointSet.add(new DataPoint(START_TIME, INITIAL_VALUE));
+
+        multiplePointSet = new DataSet();
+        multiplePointSet.add(new DataPoint(START_TIME, INITIAL_VALUE));
+        multiplePointSet.add(new DataPoint(START_TIME + TIME_INCREMENT, INITIAL_VALUE + VALUE_INCREMENT));
+        multiplePointSet.add(new DataPoint(START_TIME + 2 * TIME_INCREMENT, INITIAL_VALUE + 2 * VALUE_INCREMENT));
+        
+    }
+
+    protected void tearDown() throws java.lang.Exception {
+    }
+
+    public static junit.framework.Test suite() {
+        junit.framework.TestSuite suite = new junit.framework.TestSuite(DataSetTest.class);
+        
+        return suite;
+    }
+
+    /**
+     * Test of aggregate method, of class nz.co.abrahams.asithappens.DataSet.
+     */
+    public void testAggregate() {
+        System.out.println("testAggregate");
+        
+        Assert.assertTrue(emptySet.aggregate(GraphContext.AVERAGE_AGGREGATION) == null);
+        Assert.assertFalse(emptySet.aggregate(GraphContext.AVERAGE_AGGREGATION, START_TIME, FINISH_TIME).isDefined());
+        Assert.assertEquals( (START_TIME + FINISH_TIME) / 2, emptySet.aggregate(GraphContext.AVERAGE_AGGREGATION, START_TIME, FINISH_TIME).getTime());
+        
+        Assert.assertFalse(singleNanSet.aggregate(GraphContext.AVERAGE_AGGREGATION).isDefined());
+        Assert.assertEquals(START_TIME, singleNanSet.aggregate(GraphContext.AVERAGE_AGGREGATION).getTime());
+        
+        Assert.assertTrue(singlePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION).isDefined());
+        Assert.assertEquals(START_TIME, singlePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION).getTime());
+        Assert.assertEquals(INITIAL_VALUE, singlePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION).getValue());
+        
+        Assert.assertFalse(multipleNanSet.aggregate(GraphContext.AVERAGE_AGGREGATION).isDefined());
+        Assert.assertEquals(START_TIME + TIME_INCREMENT, multipleNanSet.aggregate(GraphContext.AVERAGE_AGGREGATION).getTime());
+        
+        Assert.assertTrue(multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION).isDefined());
+        Assert.assertEquals(START_TIME + TIME_INCREMENT, multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION).getTime());
+        Assert.assertEquals(START_TIME + TIME_INCREMENT, multiplePointSet.aggregate(GraphContext.MAXIMUM_AGGREGATION).getTime());
+        Assert.assertEquals(START_TIME + TIME_INCREMENT, multiplePointSet.aggregate(GraphContext.SUMMED_AGGREGATION).getTime());
+        Assert.assertEquals(INITIAL_VALUE + VALUE_INCREMENT, multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION).getValue());
+        Assert.assertEquals(INITIAL_VALUE + 2 * VALUE_INCREMENT, multiplePointSet.aggregate(GraphContext.MAXIMUM_AGGREGATION).getValue());
+        //Assert.assertEquals( (INITIAL_VALUE + VALUE_INCREMENT) * 3 / (TIME_INCREMENT * 2), multiplePointSet.aggregate(GraphContext.SUMMED_AGGREGATION).getValue());
+        
+        Assert.assertFalse(multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION, START_TIME + (TIME_INCREMENT / 4 ), START_TIME + (TIME_INCREMENT * 3 / 4)).isDefined());
+        Assert.assertTrue(multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION, START_TIME + (TIME_INCREMENT / 2 ), START_TIME + (TIME_INCREMENT * 3 / 2)).isDefined());
+        Assert.assertEquals(INITIAL_VALUE + VALUE_INCREMENT, multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION, START_TIME + (TIME_INCREMENT / 2 ), START_TIME + (TIME_INCREMENT * 3 / 2)).getValue());
+        
+        Assert.assertEquals(INITIAL_VALUE, multiplePointSet.aggregate(GraphContext.AVERAGE_AGGREGATION, START_TIME, START_TIME + TIME_INCREMENT).getValue());
+    }
+    
+    /**
+     * Test of generateSummaryStatistics method, of class nz.co.abrahams.asithappens.DataSet.
+     */
+    public void testGenerateSummaryStatistics() {
+        SummaryStatistics summary;
+        
+        System.out.println("testGenerateSummaryStatistics");
+        
+        summary = emptySet.generateSummaryStatistics(START_TIME, FINISH_TIME);
+        Assert.assertEquals(0, summary.samples);
+        
+        summary = singleNanSet.generateSummaryStatistics(START_TIME - TIME_INCREMENT, START_TIME + TIME_INCREMENT);
+        Assert.assertEquals(0, summary.samples);
+        
+        summary = singlePointSet.generateSummaryStatistics(START_TIME - TIME_INCREMENT, START_TIME + TIME_INCREMENT);
+        Assert.assertEquals(1, summary.samples);
+        Assert.assertEquals(START_TIME, summary.firstTime);
+        Assert.assertEquals(START_TIME, summary.lastTime);
+        Assert.assertEquals(INITIAL_VALUE, summary.average);
+        Assert.assertEquals(INITIAL_VALUE, summary.minimum);
+        Assert.assertEquals(INITIAL_VALUE, summary.maximum);
+        summary = singlePointSet.generateSummaryStatistics(START_TIME - TIME_INCREMENT, START_TIME);
+        Assert.assertEquals(1, summary.samples);
+        summary = singlePointSet.generateSummaryStatistics(START_TIME, START_TIME + TIME_INCREMENT);
+        Assert.assertEquals(1, summary.samples);
+        summary = singlePointSet.generateSummaryStatistics(START_TIME, START_TIME);
+        Assert.assertEquals(1, summary.samples);
+        summary = singlePointSet.generateSummaryStatistics(START_TIME + TIME_INCREMENT, START_TIME + 2 * TIME_INCREMENT);
+        Assert.assertEquals(0, summary.samples);
+
+        summary = multipleNanSet.generateSummaryStatistics(START_TIME - TIME_INCREMENT, START_TIME + TIME_INCREMENT);
+        Assert.assertEquals(0, summary.samples);
+
+        summary = multiplePointSet.generateSummaryStatistics(START_TIME, START_TIME + 2 * TIME_INCREMENT);
+        Assert.assertEquals(3, summary.samples);
+        Assert.assertEquals(START_TIME, summary.firstTime);
+        Assert.assertEquals(START_TIME + 2 * TIME_INCREMENT, summary.lastTime);
+        Assert.assertEquals(INITIAL_VALUE + VALUE_INCREMENT, summary.average);
+        Assert.assertEquals(INITIAL_VALUE, summary.minimum);
+        Assert.assertEquals(INITIAL_VALUE + 2 * VALUE_INCREMENT, summary.maximum);
+        summary = multiplePointSet.generateSummaryStatistics(START_TIME - TIME_INCREMENT, START_TIME + TIME_INCREMENT);
+        Assert.assertEquals(2, summary.samples);
+        Assert.assertEquals(START_TIME, summary.firstTime);
+        Assert.assertEquals(START_TIME + TIME_INCREMENT, summary.lastTime);
+        Assert.assertEquals((2 * INITIAL_VALUE + VALUE_INCREMENT) / 2, summary.average);
+        Assert.assertEquals(INITIAL_VALUE, summary.minimum);
+        Assert.assertEquals(INITIAL_VALUE + VALUE_INCREMENT, summary.maximum);
+         
+    }    
+    
+    /**
+     * Test of generateSummaryStatistics method, of class nz.co.abrahams.asithappens.DataSet.
+     */
+    public void testGetVector() {
+        Vector vector;
+        
+        vector = multiplePointSet.getVector();
+        Assert.assertEquals(3, vector.size());
+    }
+    
+}

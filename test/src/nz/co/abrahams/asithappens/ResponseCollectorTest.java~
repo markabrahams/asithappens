@@ -1,0 +1,79 @@
+/*
+ * ResponseCollectorTest.java
+ * JUnit based test
+ *
+ * Created on 17 October 2005, 20:31
+ */
+
+package nz.co.abrahams.asithappens;
+
+import junit.framework.*;
+import estadisticas.icmp.PingICMP;
+import java.net.*;
+
+/**
+ *
+ * @author mark
+ */
+public class ResponseCollectorTest extends TestCase {
+    
+    public ResponseCollectorTest(String testName) {
+        super(testName);
+    }
+
+    protected void setUp() throws java.lang.Exception {
+    }
+
+    protected void tearDown() throws java.lang.Exception {
+    }
+
+    public static junit.framework.Test suite() {
+        junit.framework.TestSuite suite = new junit.framework.TestSuite(ResponseCollectorTest.class);
+        
+        return suite;
+    }
+
+    /**
+     * Test of initCollector method, of class nz.co.abrahams.asithappens.ResponseCollector.
+     */
+    public void testInitCollector() {
+        System.out.println("testInitCollector");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getNextValues method, of class nz.co.abrahams.asithappens.ResponseCollector.
+     */
+    public void testGetNextValues() {
+        System.out.println("testGetNextValues");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of run method, of class nz.co.abrahams.asithappens.ResponseCollector.
+     */
+    public void testRun() {
+        System.out.println("testRun");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of main method, of class nz.co.abrahams.asithappens.ResponseCollector.
+     */
+    public void testMain() {
+        System.out.println("testMain");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+    
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+    
+}

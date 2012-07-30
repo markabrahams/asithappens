@@ -1,0 +1,152 @@
+/*
+ * DeviceTest.java
+ * JUnit based test
+ *
+ * Created on 26 January 2005, 01:59
+ */
+
+package nz.co.abrahams.asithappens;
+
+import junit.framework.*;
+import snmp.*;
+import java.io.*;
+import java.net.*;
+import java.math.*;
+import java.util.*;
+
+/**
+ *
+ * @author mark
+ */
+public class DeviceTest extends TestCase {
+    
+    public DeviceTest(String testName) {
+        super(testName);
+    }
+
+    protected void setUp() throws java.lang.Exception {
+    }
+
+    protected void tearDown() throws java.lang.Exception {
+    }
+
+    public static junit.framework.Test suite() {
+        junit.framework.TestSuite suite = new junit.framework.TestSuite(DeviceTest.class);
+        
+        return suite;
+    }
+
+    /**
+     * Test of getName method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetName() {
+        System.out.println("testGetName");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of resolveAddress method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testResolveAddress() {
+        System.out.println("testResolveAddress");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of createSNMPInterface method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testCreateSNMPInterface() {
+        System.out.println("testCreateSNMPInterface");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getAddress method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetAddress() {
+        System.out.println("testGetAddress");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getCommunity method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetCommunity() {
+        System.out.println("testGetCommunity");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getPortsIndex method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetPortsIndex() {
+        System.out.println("testGetPortsIndex");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getPortsDescr method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetPortsDescr() {
+        System.out.println("testGetPortsDescr");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getIfDescr method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetIfDescr() {
+        System.out.println("testGetIfDescr");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of enumeratePorts method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testEnumeratePorts() {
+        System.out.println("testEnumeratePorts");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getIfInOctets method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetIfInOctets() {
+        System.out.println("testGetIfInOctets");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+
+    /**
+     * Test of getIfOutOctets method, of class nz.co.abrahams.asithappens.Device.
+     */
+    public void testGetIfOutOctets() {
+        System.out.println("testGetIfOutOctets");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+    
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+    
+}

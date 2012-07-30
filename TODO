@@ -1,0 +1,54 @@
+NEW FEATURES
+Auto-discovery of SNMP type from custom OID collector
+Graphing of negative values (for custom OIDs)
+Saving graph templates
+Non-zero graph origin (graph bottom fixing, auto scaling for negative values)
+Add internationalization (suggested by Thierry Uso)
+Add French translation (suggested by Thierry Uso)
+Add SNMPv3 support (suggested by George)
+Implement MAC address accounting polling (suggested by Kristian Larsson)
+Add export/import function for database transfer to another host (suggested by Karl Bousader)
+Add minimum polling interval config option (suggested by Carlos Sola)
+Add other interface variables e.g. packets per second, errors
+Add option to force deletion of collecting session (suggested by Paul Cainkar)
+Implement CBWFQ MIB polling
+Add Debian package creation
+Add storage of all sessions by default (as config option)
+NBAR polling to eliminate averaging effects (use AllStatsTable with GetBulk?)
+Add ability to use "protocols", "services" and "hosts" files for resolution
+Add creation of labels directly on graph panel
+Add renaming of labels via double-click on graph panel
+Add drag-and-drop to move labels
+Add right-click deletion of labels
+Add perpetual file polling and graphing for packet capture graphs
+
+
+BUG FIXES
+Graph panel not correctly callibrated with y-axis
+JVM crash in Self Defending Network when sound is enabled
+Crash when opening some capture files over a Windows DFS share
+Crash when handling out-of-bounds dates for capture graph
+Out-of-memory crash when graphing large capture files
+Net-SNMP processor data stops collecting except for "User" set
+Adding labels to multiple graphs for same session produces inconsistency with database labels
+NetFlow destination address mask setting doesn't do anything (looks like an IOS bug)
+No NBAR capability checking during NBAR collector initialization
+Resizing graphs of large packet captures causes application to freeze for a long time
+Clicking on the database tab after application has been open a long time produces an error (reported by Abigail Whyld)
+NullPointerException when opening two packet capture graphs concurrently
+No storing of read community in Host panel
+
+
+TIDYING
+Document all classes using javadoc
+Implement unit testing framework using JUnit
+Implement application logging across all classes using log4j
+Implement "GETBULK" method for more efficient SNMP table retrieval
+Introduce collector table into Database to model DataCollector object
+Investigate SNMPException types
+
+
+NOT FIXING
+Enforce referential integrity across database
+Replacement of Date/Time fields in database/capture panels with JFormattedTextField - prefer simple text interface
+

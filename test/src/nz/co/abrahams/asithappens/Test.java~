@@ -1,0 +1,71 @@
+/*
+ * Test.java
+ *
+ * Created on 10 November 2003, 10:58
+ */
+
+package asithappens.test;
+
+import java.sql.*;
+
+/**
+ *
+ * @author  zgc0037
+ */
+public class Test {
+    
+    /** Creates a new instance of Test */
+    public Test() {
+    }
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        Connection conn;
+        Statement stmt = null;
+        ResultSet rs = null;
+        double testdub;
+        Double d;
+        
+        testdub = Double.NaN;
+        
+        if ( Double.isNaN(testdub) )
+            System.out.println("comparison OK");
+        else
+            System.out.println("comparison not OK");
+        
+        d = new Double(Double.NaN);
+        if ( d.isNaN() )
+            System.out.println("Double comparison OK");
+        else
+            System.out.println("Double comparison not OK");
+        
+        try {
+            // The newInstance() call is a work around for some
+            // broken Java implementations
+            
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+        } catch (Exception ex) {
+            // handle the error
+        }
+        
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/test");
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM pet");
+            rs.first();
+            
+            System.out.println("Name: " + rs.getString("name") + "Owner: " + rs.getString("owner"));
+            rs.close();
+            stmt.close();
+            
+        } catch (SQLException ex) {
+            // handle any errors
+            System.out.println("SQLException: " + ex.getMessage());
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("VendorError: " + ex.getErrorCode());
+        }
+    }
+    
+}

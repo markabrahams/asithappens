@@ -1,0 +1,7 @@
+Testsuite: nz.co.abrahams.asithappens.PacketTraceIteratorTest
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.435 sec
+------------- Standard Output ---------------
+testNext
+------------- ---------------- ---------------
+
+Testcase: testNext took 0.434 sec

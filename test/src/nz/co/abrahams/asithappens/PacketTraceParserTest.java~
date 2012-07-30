@@ -1,0 +1,59 @@
+/*
+ * PacketTraceParserTest.java
+ * JUnit based test
+ *
+ * Created on 2 May 2005, 23:34
+ */
+
+package nz.co.abrahams.asithappens;
+
+import junit.framework.*;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import com.voytechs.jnetstream.io.StreamFormatException;
+import com.voytechs.jnetstream.io.EOPacketStream;
+import com.voytechs.jnetstream.io.EOPacket;
+import com.voytechs.jnetstream.io.RawformatInputStream;
+import com.voytechs.jnetstream.io.PacketInputStream;
+import com.voytechs.jnetstream.npl.SyntaxError;
+import com.voytechs.jnetstream.primitive.MacAddressPrimitive;
+import com.voytechs.jnetstream.primitive.IpAddressPrimitive;
+
+/**
+ *
+ * @author mark
+ */
+public class PacketTraceParserTest extends TestCase {
+    
+    public PacketTraceParserTest(String testName) {
+        super(testName);
+    }
+
+    protected void setUp() throws java.lang.Exception {
+    }
+
+    protected void tearDown() throws java.lang.Exception {
+    }
+
+    public static junit.framework.Test suite() {
+        junit.framework.TestSuite suite = new junit.framework.TestSuite(PacketTraceParserTest.class);
+        suite.addTest(new PacketTraceParserTest);
+        return suite;
+    }
+
+    /**
+     * Test of nextPacket method, of class nz.co.abrahams.asithappens.PacketTraceParser.
+     */
+    public void testNextPacket() {
+        System.out.println("testNextPacket");
+        
+        // TODO add your test code below by replacing the default call to fail.
+        fail("The test case is empty.");
+    }
+    
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+    
+}

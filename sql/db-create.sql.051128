@@ -1,0 +1,58 @@
+-- MySQL dump 9.10
+--
+-- Host: localhost    Database: asithappens
+-- ------------------------------------------------------
+-- Server version	4.0.18-max-debug
+
+CREATE DATABASE asithappens;
+USE asithappens;
+
+--
+-- Table structure for table `data`
+--
+
+CREATE TABLE data (
+  sessionID int(11) NOT NULL default '0',
+  time bigint(20) NOT NULL default '0',
+  position int(11) NOT NULL default '0',
+  value double default NULL,
+  PRIMARY KEY  (sessionID, time, position)
+) TYPE=InnoDB;
+
+--
+-- Table structure for table `datatypes`
+--
+
+CREATE TABLE datatypes (
+  dataTypeID int(11) NOT NULL default '0',
+  dataType varchar(255) NOT NULL default '',
+  valueColumns int(11) NOT NULL default '0',
+  PRIMARY KEY  (dataTypeID)
+) TYPE=InnoDB;
+
+--
+-- Table structure for table `sessions`
+--
+
+CREATE TABLE sessions (
+  sessionID int(11) NOT NULL auto_increment,
+  dataTypeID int(11) NOT NULL default '0',
+  device varchar(255) NOT NULL default '',
+  pollInterval bigint(20) default NULL,
+  port varchar(255) default NULL,
+  startDate bigint(20) NOT NULL default '0',
+  finishDate bigint(20) default NULL,
+  collecting tinyint(1) NOT NULL default '1',
+  PRIMARY KEY  (sessionID)
+) TYPE=InnoDB;
+
+--
+-- Dumping data for table `datatypes`
+--
+
+INSERT INTO datatypes VALUES (1,'Bandwidth',2);
+INSERT INTO datatypes VALUES (2,'Response',1);
+
+GRANT ALL ON asithappens.* TO asithappens@'%' IDENTIFIED BY 'oneway';
+FLUSH PRIVILEGES;
+
