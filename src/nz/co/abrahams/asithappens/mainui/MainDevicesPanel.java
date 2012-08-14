@@ -1,24 +1,33 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * MainDevicesPanel.java
+ *
+ * Created on 19 January 2005, 23:41
+ *
+ * AsItHappens - real-time network monitor
+ * Copyright (C) 2006  Mark Abrahams
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 package nz.co.abrahams.asithappens.mainui;
 
-import nz.co.abrahams.asithappens.core.DAOFactory;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
-import nz.co.abrahams.asithappens.storage.DeviceDAO;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JList;
-import javax.swing.JButton;
-import javax.swing.SwingUtilities;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+import nz.co.abrahams.asithappens.core.DAOFactory;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.storage.DeviceDAO;
+import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 
 /**
  *
@@ -66,7 +75,7 @@ public class MainDevicesPanel extends JPanel {
 
     }
 
-    public void displayDevices() {
+    private void displayDevices() {
         DeviceDAO deviceDAO;
         String[] devices;
 
@@ -93,7 +102,7 @@ public class MainDevicesPanel extends JPanel {
             ErrorHandler.modalError(this, "Please select at least one device", "No device selected");
             return;
         }
-        dialog = new EditDeviceDialog((JFrame)(SwingUtilities.getWindowAncestor(this)), true);
+        dialog = new EditDeviceDialog((JFrame)(SwingUtilities.getWindowAncestor(this)), true, (String)(deviceList.getSelectedValue()));
         dialog.setVisible(true);
     }
 }

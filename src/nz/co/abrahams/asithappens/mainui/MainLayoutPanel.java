@@ -56,8 +56,8 @@ public class MainLayoutPanel extends javax.swing.JPanel {
                 saveButtonActionPerformed(evt);
             }
         });
-        add(saveButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 30, 100, 30));
-        add(saveField, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 30, 110, 30));
+        add(saveButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 30, 120, 30));
+        add(saveField, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 30, 110, 30));
 
         overwriteButton.setText("Overwrite");
         overwriteButton.addActionListener(new java.awt.event.ActionListener() {
@@ -65,7 +65,7 @@ public class MainLayoutPanel extends javax.swing.JPanel {
                 overwriteButtonActionPerformed(evt);
             }
         });
-        add(overwriteButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 70, 100, 30));
+        add(overwriteButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 70, 120, 30));
 
         restoreButton.setText("Restore");
         restoreButton.addActionListener(new java.awt.event.ActionListener() {
@@ -73,7 +73,7 @@ public class MainLayoutPanel extends javax.swing.JPanel {
                 restoreButtonActionPerformed(evt);
             }
         });
-        add(restoreButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 170, 100, 30));
+        add(restoreButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 170, 120, 30));
 
         deleteButton.setText("Delete");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
@@ -81,7 +81,7 @@ public class MainLayoutPanel extends javax.swing.JPanel {
                 deleteButtonActionPerformed(evt);
             }
         });
-        add(deleteButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 230, 100, 30));
+        add(deleteButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 230, 120, 30));
     }// </editor-fold>//GEN-END:initComponents
     
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed

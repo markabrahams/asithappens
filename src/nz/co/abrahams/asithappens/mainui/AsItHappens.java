@@ -18,21 +18,17 @@
  */
 package nz.co.abrahams.asithappens.mainui;
 
-import nz.co.abrahams.asithappens.core.DBCreateDialog;
-import nz.co.abrahams.asithappens.core.DBCreate;
-import nz.co.abrahams.asithappens.core.DBUtil;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.core.Configuration;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import nz.co.abrahams.asithappens.core.*;
 import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.BorderLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * The main application JFrame.

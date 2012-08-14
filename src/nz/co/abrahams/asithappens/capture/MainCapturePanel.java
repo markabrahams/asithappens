@@ -87,7 +87,7 @@ public class MainCapturePanel extends javax.swing.JPanel {
                 fileButtonActionPerformed(evt);
             }
         });
-        add(fileButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 10, -1, 20));
+        add(fileButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 10, 40, 20));
 
         fetchBoundaryTimesButton.setText("Fetch Boundary Times");
         fetchBoundaryTimesButton.addActionListener(new java.awt.event.ActionListener() {

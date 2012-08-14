@@ -49,6 +49,7 @@ public class PortsSelectorModel {
         this.retrieveRWCommunity = retrieveRWCommunity;
     }
     
+    /*
     public void setDevice(String deviceName, String community) throws UnknownHostException, SNMPException {
         if ( retrieveRWCommunity ) {
             device = new Device(deviceName, null, community, true);
@@ -58,6 +59,12 @@ public class PortsSelectorModel {
             device = new Device(deviceName, community, null, false);
             snmp = new PortsSelectorSNMP(device);
         }
+    }
+    */
+    
+    public void setDevice(Device newDevice) throws UnknownHostException, SNMPException {
+        device = newDevice;
+        snmp = new PortsSelectorSNMP(device, retrieveRWCommunity);
     }
     
     public Device getDevice() {
@@ -69,18 +76,23 @@ public class PortsSelectorModel {
     }
 
     public void enumeratePorts() throws SNMPException, DBException {
-        DeviceDAO deviceDAO;
+        //DeviceDAO deviceDAO;
         
         snmp.enumeratePorts();
+        /*
         deviceDAO = DAOFactory.getDeviceDAO();
         if ( retrieveRWCommunity )
-            deviceDAO.updateDevice(snmp.getDevice().getName(), null, snmp.getDevice().getCommunityWrite(), null, null);
+            deviceDAO.updateDevice(snmp.getDevice().getName(), snmp.getDevice().getSNMPVersion(),
+                    null, snmp.getDevice().getCommunityWrite(), null, null, null, null);
         else
-            deviceDAO.updateDevice(snmp.getDevice().getName(), snmp.getDevice().getCommunityRead(), null, null, null);
+            deviceDAO.updateDevice(snmp.getDevice().getName(), snmp.getDevice().getSNMPVersion(),
+                    snmp.getDevice().getCommunityRead(), null, null, null, null, null);
         deviceDAO.closeConnection();
+        */
         
     }
     
+    /*
     public String retrieveCommunity(String deviceName) throws DBException {
         Device temporaryDevice;
         
@@ -90,6 +102,7 @@ public class PortsSelectorModel {
         else
             return temporaryDevice.retrieveReadCommunity();
     }
+    */
     
     public Vector getTableData() {
         return snmp.getPortsVector();

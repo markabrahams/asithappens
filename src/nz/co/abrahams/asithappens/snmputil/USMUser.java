@@ -28,4 +28,30 @@ public class USMUser {
         this.userPrivProtocol = userPrivProtocol;
         this.userPrivKey = userPrivKey;
     }
+
+    public String getUserAuthKey() {
+        return userAuthKey;
+    }
+
+    public USMAuthProtocol getUserAuthProtocol() {
+        return userAuthProtocol;
+    }
+
+    public USMLevel getUserLevel() {
+        return userLevel;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getUserPrivKey() {
+        return userPrivKey;
+    }
+
+    public USMPrivProtocol getUserPrivProtocol() {
+        return userPrivProtocol;
+    }
+    
+    
 }

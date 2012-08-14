@@ -63,17 +63,18 @@ public class MainResponsePanel extends javax.swing.JPanel {
 
         deviceLabel.setText("Device");
         add(deviceLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 50, 20));
-        add(deviceField, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 10, 120, -1));
+        add(deviceField, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 10, 140, -1));
 
         pollLabel.setText("Poll Interval");
-        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, 80, 20));
+        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, 130, 20));
 
+        pollField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         pollField.setText("2000");
-        add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 40, 50, -1));
+        add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 40, 60, -1));
 
         pollUnitsLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         pollUnitsLabel.setText("ms");
-        add(pollUnitsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 40, 20, 20));
+        add(pollUnitsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 40, 20, 20));
 
         storeDataCheckBox.setText("Store collected data");
         add(storeDataCheckBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, 180, -1));
@@ -84,7 +85,7 @@ public class MainResponsePanel extends javax.swing.JPanel {
                 responseButtonActionPerformed(evt);
             }
         });
-        add(responseButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 105, 180, -1));
+        add(responseButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 105, 200, -1));
     }// </editor-fold>//GEN-END:initComponents
     
     /** Creates a new response graph. */

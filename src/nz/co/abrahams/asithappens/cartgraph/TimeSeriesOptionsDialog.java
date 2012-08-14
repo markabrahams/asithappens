@@ -114,7 +114,7 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
         autoGraphTopButton = new javax.swing.JRadioButton();
         fixGraphTopButton = new javax.swing.JRadioButton();
         fixGraphTopField = new javax.swing.JTextField();
-        fixGraphUnitsComboBox = new javax.swing.JComboBox(TimeSeriesContext.VALUE_UNITS);
+        fixGraphUnitsComboBox = new javax.swing.JComboBox(nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext.VALUE_UNITS);
         okButton = new javax.swing.JButton();
         applyButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -199,12 +199,12 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
         positioningGroup.add(positioningGroundedButton);
         positioningGroundedButton.setText("Grounded");
         positioningGroundedButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        getContentPane().add(positioningGroundedButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 220, 80, -1));
+        getContentPane().add(positioningGroundedButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 220, 120, -1));
 
         positioningGroup.add(positioningStackedButton);
         positioningStackedButton.setText("Stacked");
         positioningStackedButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        getContentPane().add(positioningStackedButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 240, 70, -1));
+        getContentPane().add(positioningStackedButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 240, 120, -1));
 
         aggregationLabel.setText("Aggregation");
         getContentPane().add(aggregationLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 280, -1, -1));
@@ -272,7 +272,7 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
                 okButtonActionPerformed(evt);
             }
         });
-        getContentPane().add(okButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 460, 80, -1));
+        getContentPane().add(okButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 460, 90, -1));
 
         applyButton.setText("Apply");
         applyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -280,7 +280,7 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
                 applyButtonActionPerformed(evt);
             }
         });
-        getContentPane().add(applyButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 460, 80, -1));
+        getContentPane().add(applyButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 460, 90, -1));
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -288,7 +288,7 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
                 cancelButtonActionPerformed(evt);
             }
         });
-        getContentPane().add(cancelButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 460, 80, -1));
+        getContentPane().add(cancelButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 460, 90, -1));
 
         setDisplayLabel.setText("Set display");
         getContentPane().add(setDisplayLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 40, -1, -1));

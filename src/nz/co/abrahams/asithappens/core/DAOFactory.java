@@ -20,36 +20,26 @@
 
 package nz.co.abrahams.asithappens.core;
 
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import nz.co.abrahams.asithappens.bandwidth.BandwidthCollectorDAO;
+import nz.co.abrahams.asithappens.cartgraph.DataGraphDAO;
+import nz.co.abrahams.asithappens.cartgraph.TimeSeriesOptionsDAO;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.collectors.DataCollectorDAO;
 import nz.co.abrahams.asithappens.collectors.DataCollectorDAOType;
-import nz.co.abrahams.asithappens.storage.DataHeadingsDAO;
-import nz.co.abrahams.asithappens.storage.DataSetsDAO;
-import nz.co.abrahams.asithappens.storage.DeviceDAO;
-import nz.co.abrahams.asithappens.storage.DataSetDAO;
-import nz.co.abrahams.asithappens.storage.DataPointDAO;
-import nz.co.abrahams.asithappens.storage.DataLabelsDAO;
-import nz.co.abrahams.asithappens.storage.LayoutDAO;
 import nz.co.abrahams.asithappens.flow.FlowOptionsDAO;
+import nz.co.abrahams.asithappens.host.*;
+import nz.co.abrahams.asithappens.nbar.NBARCollectorDAO;
+import nz.co.abrahams.asithappens.netflow.NetFlowCollectorDAO;
+import nz.co.abrahams.asithappens.netflow.NetFlowMatchCriteriaDAO;
 import nz.co.abrahams.asithappens.oid.CustomOIDCollectorDAO;
 import nz.co.abrahams.asithappens.oid.CustomOIDDAO;
-import nz.co.abrahams.asithappens.netflow.NetFlowMatchCriteriaDAO;
-import nz.co.abrahams.asithappens.netflow.NetFlowCollectorDAO;
-import nz.co.abrahams.asithappens.nbar.NBARCollectorDAO;
-import nz.co.abrahams.asithappens.host.ProcessorHRCollectorDAO;
-import nz.co.abrahams.asithappens.host.MemoryUCDCollectorDAO;
-import nz.co.abrahams.asithappens.host.MemoryCiscoCollectorDAO;
-import nz.co.abrahams.asithappens.host.ProcessorCiscoCollectorDAO;
-import nz.co.abrahams.asithappens.host.ProcessorUCDCollectorDAO;
-import nz.co.abrahams.asithappens.host.MemoryHRCollectorDAO;
-import nz.co.abrahams.asithappens.response.ResponseWindowsCollectorDAO;
 import nz.co.abrahams.asithappens.response.ResponseCollectorDAO;
-import nz.co.abrahams.asithappens.collectors.DataCollectorDAO;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesOptionsDAO;
-import nz.co.abrahams.asithappens.cartgraph.DataGraphDAO;
+import nz.co.abrahams.asithappens.response.ResponseWindowsCollectorDAO;
+import nz.co.abrahams.asithappens.snmputil.USMUserDAO;
+import nz.co.abrahams.asithappens.storage.*;
 import nz.co.abrahams.asithappens.uiutil.SetDisplayDAO;
-import nz.co.abrahams.asithappens.bandwidth.BandwidthCollectorDAO;
-import java.sql.Connection;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  *
@@ -112,6 +102,10 @@ public class DAOFactory {
     
     public static DeviceDAO getDeviceDAO(Connection connection) throws DBException {
         return new DeviceDAO(connection);
+    }
+    
+    public static USMUserDAO getUSMUserDAO(Connection connection) throws DBException {
+        return new USMUserDAO(connection);
     }
     
     public static LayoutDAO getLayoutDAO() throws DBException {

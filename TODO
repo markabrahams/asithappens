@@ -1,17 +1,21 @@
 NEW FEATURES
 Auto-discovery of SNMP type from custom OID collector
 Graphing of negative values (for custom OIDs)
+MIB browser for easier custom OID specification
 Saving graph templates
 Non-zero graph origin (graph bottom fixing, auto scaling for negative values)
 Add internationalization (suggested by Thierry Uso)
 Add French translation (suggested by Thierry Uso)
-Add SNMPv3 support (suggested by George)
 Implement MAC address accounting polling (suggested by Kristian Larsson)
 Add export/import function for database transfer to another host (suggested by Karl Bousader)
 Add minimum polling interval config option (suggested by Carlos Sola)
-Add other interface variables e.g. packets per second, errors
-Add option to force deletion of collecting session (suggested by Paul Cainkar)
+Add other interface variables e.g. packets per second, errors (suggested by Paul Cainkar)
+Add option to force deletion of collecting session (suggested by Miguel Angel)
+Add CLI option to run it on a headless server (suggested by Cristian Rojas)
+Add option to use ifAlias instead of ifDescr in graph titles by default (suggested by Yuri)
+Add option to save current layount on exit (suggested by Yuri)
 Implement CBWFQ MIB polling
+Implement HTTP response polling
 Add Debian package creation
 Add storage of all sessions by default (as config option)
 NBAR polling to eliminate averaging effects (use AllStatsTable with GetBulk?)

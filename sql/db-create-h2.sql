@@ -43,26 +43,15 @@ CREATE TABLE `Devices` (
   `name` varchar(255) NOT NULL,
   `ipAddress` varchar(255) default NULL,
   `hardwareAddress` varchar(255) default NULL,
+  `snmpVersion` int(11) NOT NULL default '1',
   `communityRead` varchar(255) default NULL,
   `communityWrite` varchar(255) default NULL,
   `userReadID` int(11) default NULL,
   `userWriteID` int(11) default NULL,
---  `userNameRead` varchar(255) default NULL,
---  `userLevelRead` int(11) NOT NULL default '1',
---  `userAuthProtocolRead` int(11) NOT NULL default '1',
---  `userAuthKeyRead` varchar(255) default NULL,
---  `userPrivProtocolRead` int(11) NOT NULL default '1',
---  `userPrivKeyRead` varchar(255) default NULL,
---  `userNameWrite` varchar(255) default NULL,
---  `userLevelWrite` int(11) NOT NULL default '1',
---  `userAuthProtocolWrite` int(11) NOT NULL default '1',
---  `userAuthKeyWrite` varchar(255) default NULL,
---  `userPrivProtocolWrite` int(11) NOT NULL default '1',
---  `userPrivKeyWrite` varchar(255) default NULL,
   PRIMARY KEY (`name`)
 );
 
-CREATE TABLE `UsmUsers` {
+CREATE TABLE `UsmUsers` (
   `userID` int(11) NOT NULL auto_increment,
   `userName` varchar(255) default NULL,
   `userLevel` int(11) NOT NULL default '1',
@@ -71,7 +60,7 @@ CREATE TABLE `UsmUsers` {
   `userPrivProtocol` int(11) NOT NULL default '1',
   `userPrivKey` varchar(255) default NULL,
   PRIMARY KEY (`userID`)
-};
+);
 
 CREATE TABLE `Layouts` (
   `layoutName` varchar(255) NOT NULL,

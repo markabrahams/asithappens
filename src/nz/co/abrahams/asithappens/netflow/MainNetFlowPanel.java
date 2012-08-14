@@ -89,8 +89,9 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         pollLabel.setText("Poll Interval");
-        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 80, 20));
+        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 100, 20));
 
+        pollField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         pollField.setText("2");
         add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 10, 60, -1));
 

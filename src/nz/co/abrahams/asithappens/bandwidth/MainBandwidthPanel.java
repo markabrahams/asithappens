@@ -66,10 +66,11 @@ public class MainBandwidthPanel extends javax.swing.JPanel {
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         pollLabel.setText("Poll Interval");
-        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 80, 20));
+        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 90, 20));
 
+        pollField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         pollField.setText("2000");
-        add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, 10, 80, -1));
+        add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, 10, 70, -1));
 
         pollUnitsLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         pollUnitsLabel.setText("ms");

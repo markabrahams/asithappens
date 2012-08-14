@@ -19,17 +19,13 @@
 
 package nz.co.abrahams.asithappens.snmputil;
 
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.Vector;
 import nz.co.abrahams.asithappens.core.Configuration;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.snmputil.SNMPAccess;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.snmputil.SNMPInterface;
 import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.storage.DeviceDAO;
 import org.apache.log4j.Logger;
-import java.util.Vector;
-import java.util.LinkedList;
-import java.net.UnknownHostException;
 
 /**
  *
@@ -59,12 +55,13 @@ public class PortsSelectorSNMP extends SNMPInterface {
      * @throws UnknownHostException
      * @throws SNMPException
      */
-    public PortsSelectorSNMP(Device device) throws UnknownHostException, SNMPException {
+    public PortsSelectorSNMP(Device device, boolean useWriteAuth) throws UnknownHostException, SNMPException {
         super(device);
-        if ( device.getCommunityRead() != null )
-            snmpAccess = device.createSNMPReadInterface();
-        else
+        //if ( device.getCommunityRead() != null )
+        if ( useWriteAuth )
             snmpAccess = device.createSNMPWriteInterface();
+        else
+            snmpAccess = device.createSNMPReadInterface();
     }
 
 

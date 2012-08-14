@@ -128,7 +128,7 @@ public class BandwidthCollectorDAO implements DataCollectorDAO {
         pollInterval = ((Long)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_POLLINTERVAL, sessionID))).longValue();
         prefer64BitCounters = ((Byte)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_USE64BITCOUNTERS, sessionID))).intValue() == 1;
         ifDescriptions = retrieveBandwidthCollectorPorts(sessionID);
-        portsSNMP = new PortsSelectorSNMP(device);
+        portsSNMP = new PortsSelectorSNMP(device, false);
         /*
         portsSNMP.enumeratePorts();
         ifIndicies = new int[ifDescriptions.length];

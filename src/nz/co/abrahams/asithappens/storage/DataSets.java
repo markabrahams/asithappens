@@ -203,7 +203,8 @@ public class DataSets implements Runnable {
     /** Creates a new empty instance of DataSets */
     public DataSets() {
         logger = Logger.getLogger(this.getClass().getName());
-        this.storing = true;
+        //this.storing = true;
+        this.storing = false;
         this.collector = null;
         this.collecting = false;
         initializeDataSets();

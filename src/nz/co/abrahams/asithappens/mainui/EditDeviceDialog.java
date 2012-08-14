@@ -1,21 +1,30 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * EditDeviceDialog.java
  *
- * Created on 24/01/2010, 5:46:44 PM
+ * Created on 1 August 2012, 23:21
+ *
+ * AsItHappens - real-time network monitor
+ * Copyright (C) 2006  Mark Abrahams
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 package nz.co.abrahams.asithappens.mainui;
 
-import nz.co.abrahams.asithappens.snmputil.USMLevel;
-import nz.co.abrahams.asithappens.snmputil.USMAuthProtocol;
-import nz.co.abrahams.asithappens.snmputil.USMPrivProtocol;
-import nz.co.abrahams.asithappens.storage.Device;
 import javax.swing.JComboBox;
+import nz.co.abrahams.asithappens.snmputil.USMAuthProtocol;
+import nz.co.abrahams.asithappens.snmputil.USMLevel;
+import nz.co.abrahams.asithappens.snmputil.USMPrivProtocol;
+import nz.co.abrahams.asithappens.snmputil.USMUser;
+import nz.co.abrahams.asithappens.storage.Device;
 
 /**
  *
@@ -26,7 +35,7 @@ public class EditDeviceDialog extends javax.swing.JDialog {
     private Device device;
 
     /** Creates new form EditDeviceDialog */
-    public EditDeviceDialog(java.awt.Frame parent, boolean modal) {
+    public EditDeviceDialog(java.awt.Frame parent, boolean modal, String deviceName) {
         super(parent, modal);
         initComponents();
     }
@@ -180,24 +189,11 @@ public class EditDeviceDialog extends javax.swing.JDialog {
     }
 
     private void saveDevice() {
-
-    }
-
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                EditDeviceDialog dialog = new EditDeviceDialog(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
+        USMUser readUser;
+        USMUser writeUser;
+        
+        //readUser = new USMUser();
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

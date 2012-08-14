@@ -22,7 +22,7 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Dialog" size="24" style="1"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="AsItHappens 0.57"/>
+        <Property name="text" type="java.lang.String" value="AsItHappens 0.58"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -45,7 +45,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="copyrightLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="(c) 2006-2010 Mark Abrahams"/>
+        <Property name="text" type="java.lang.String" value="(c) 2006-2012 Mark Abrahams"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">

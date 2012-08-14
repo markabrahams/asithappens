@@ -19,15 +19,16 @@
 
 package nz.co.abrahams.asithappens.mainui;
 
-import nz.co.abrahams.asithappens.capture.MainCapturePanel;
-import nz.co.abrahams.asithappens.oid.MainOIDPanel;
-import nz.co.abrahams.asithappens.netflow.MainNetFlowPanel;
-import nz.co.abrahams.asithappens.nbar.MainNBARPanel;
-import nz.co.abrahams.asithappens.host.MainHostPanel;
-import nz.co.abrahams.asithappens.response.MainResponsePanel;
-import nz.co.abrahams.asithappens.core.DBException;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import nz.co.abrahams.asithappens.bandwidth.MainBandwidthPanel;
-import javax.swing.*;
+import nz.co.abrahams.asithappens.capture.MainCapturePanel;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.host.MainHostPanel;
+import nz.co.abrahams.asithappens.nbar.MainNBARPanel;
+import nz.co.abrahams.asithappens.netflow.MainNetFlowPanel;
+import nz.co.abrahams.asithappens.oid.MainOIDPanel;
+import nz.co.abrahams.asithappens.response.MainResponsePanel;
 
 /**
  * The main application JPanel containing the tabbed pane components.
@@ -37,15 +38,16 @@ import javax.swing.*;
 public class MainTabbedPanel extends JPanel {
     
     JTabbedPane pane;
-    MainDevicesPanel devicePanel;
-    MainBandwidthPanel bandwidthPanel;
-    MainResponsePanel responsePanel;
-    MainHostPanel hostPanel;
-    MainNBARPanel nbarPanel;
-    MainNetFlowPanel netflowPanel;
-    MainOIDPanel oidPanel;
-    MainSessionsPanel databasePanel;
+    //MainDevicesPanel devicePanel;
+    //MainBandwidthPanel bandwidthPanel;
+    //MainResponsePanel responsePanel;
+    //MainHostPanel hostPanel;
+    //MainNBARPanel nbarPanel;
+    //MainNetFlowPanel netflowPanel;
+    //MainOIDPanel oidPanel;
+    CollectorsTabbedPanel collectorsPanel;
     MainCapturePanel capturePanel;
+    MainSessionsPanel databasePanel;
     MainLayoutPanel layoutPanel;
     MainAboutPanel aboutPanel;
     
@@ -56,17 +58,18 @@ public class MainTabbedPanel extends JPanel {
     }
     
     /** Lays out GUI components. */
-    protected void initComponents() throws DBException {
+    private void initComponents() throws DBException {
         pane = new JTabbedPane();
-        devicePanel = new MainDevicesPanel();
-        bandwidthPanel = new MainBandwidthPanel();
-        responsePanel = new MainResponsePanel();
-        hostPanel = new MainHostPanel();
-        nbarPanel = new MainNBARPanel();
-        netflowPanel = new MainNetFlowPanel();
-        oidPanel = new MainOIDPanel();
-        databasePanel = new MainSessionsPanel();
+        //devicePanel = new MainDevicesPanel();
+        //bandwidthPanel = new MainBandwidthPanel();
+        //responsePanel = new MainResponsePanel();
+        //hostPanel = new MainHostPanel();
+        //nbarPanel = new MainNBARPanel();
+        //netflowPanel = new MainNetFlowPanel();
+        //oidPanel = new MainOIDPanel();
+        collectorsPanel = new CollectorsTabbedPanel();
         capturePanel = new MainCapturePanel();
+        databasePanel = new MainSessionsPanel();
         layoutPanel = new MainLayoutPanel();
         aboutPanel = new MainAboutPanel();
         
@@ -76,15 +79,16 @@ public class MainTabbedPanel extends JPanel {
             }
         });
         
-        pane.addTab("Device", null, devicePanel, "Device list");
-        pane.addTab("Bandwidth", null, bandwidthPanel, "Bandwidth SNMP collector");
-        pane.addTab("Response", null, responsePanel, "Ping response collector");
-        pane.addTab("Host", null, hostPanel, "Host resource collector");
-        pane.addTab("NBAR", null, nbarPanel, "NBAR Top-N collector");
-        pane.addTab("NetFlow", null, netflowPanel, "NetFlow Top-N collector");
-        pane.addTab("OID", null, oidPanel, "Custom OID collector");
-        pane.addTab("Sessions", null, databasePanel, "Stored session retrieval");
+        //pane.addTab("Device", null, devicePanel, "Device list");
+        //pane.addTab("Bandwidth", null, bandwidthPanel, "Bandwidth SNMP collector");
+        //pane.addTab("Response", null, responsePanel, "Ping response collector");
+        //pane.addTab("Host", null, hostPanel, "Host resource collector");
+        //pane.addTab("NBAR", null, nbarPanel, "NBAR Top-N collector");
+        //pane.addTab("NetFlow", null, netflowPanel, "NetFlow Top-N collector");
+        //pane.addTab("OID", null, oidPanel, "Custom OID collector");
+        pane.addTab("Collectors", null, collectorsPanel, "Collectors");
         pane.addTab("Capture", null, capturePanel, "Packet capture analysis");
+        pane.addTab("Sessions", null, databasePanel, "Stored session retrieval");
         pane.addTab("Layout", null, layoutPanel, "Save or load layouts");
         pane.addTab("About", null, aboutPanel, "About AsItHappens");
         add(pane);

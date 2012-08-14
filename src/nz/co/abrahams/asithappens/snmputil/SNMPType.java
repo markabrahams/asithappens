@@ -6,7 +6,8 @@
 
 package nz.co.abrahams.asithappens.snmputil;
 
-import org.snmp4j.smi.*;
+import org.snmp4j.smi.SMIConstants;
+import org.snmp4j.smi.Variable;
 
 /**
  *

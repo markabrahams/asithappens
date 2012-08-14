@@ -30,6 +30,8 @@ import nz.co.abrahams.asithappens.cartgraph.DataGraph;
 import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 import java.net.*;
 import javax.swing.*;
+import nz.co.abrahams.asithappens.uiutil.DeviceSelectorModel;
+import nz.co.abrahams.asithappens.uiutil.DeviceSelectorPanel;
 //import org.apache.log4j.Logger;
 
 /**
@@ -65,10 +67,14 @@ public class MainHostPanel extends javax.swing.JPanel {
 
     /** Cisco memory SNMP interface to device */
     private MemoryCiscoSNMP memoryCiscoSNMP;
+    
+    /** Device selector panel */
+    private DeviceSelectorPanel deviceSelectorPanel;
 
     /** Creates new form MainHostPanel */
     public MainHostPanel() {
         initComponents();
+        initComponentsFinish();
     }
     
     /** This method is called from within the constructor to
@@ -79,10 +85,6 @@ public class MainHostPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        deviceLabel = new javax.swing.JLabel();
-        deviceField = new javax.swing.JTextField();
-        communityLabel = new javax.swing.JLabel();
-        communityField = new javax.swing.JTextField();
         pollLabel = new javax.swing.JLabel();
         pollField = new javax.swing.JTextField();
         pollUnitsLabel = new javax.swing.JLabel();
@@ -99,43 +101,23 @@ public class MainHostPanel extends javax.swing.JPanel {
 
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        deviceLabel.setText("Device");
-        add(deviceLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 50, 20));
-
-        deviceField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deviceFieldActionPerformed(evt);
-            }
-        });
-        deviceField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                deviceFieldFocusLost(evt);
-            }
-        });
-        add(deviceField, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 10, 120, -1));
-
-        communityLabel.setText("Community");
-        add(communityLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, 80, -1));
-
-        communityField.setText("public");
-        add(communityField, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 40, 90, -1));
-
         pollLabel.setText("Poll Interval");
-        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 10, 80, 20));
+        add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 90, 20));
 
+        pollField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         pollField.setText("2000");
-        add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 10, 60, -1));
+        add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 50, 50, -1));
 
         pollUnitsLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         pollUnitsLabel.setText("ms");
-        add(pollUnitsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 10, 20, 20));
+        add(pollUnitsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 50, 20, 20));
 
         collectorTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 collectorTypeComboBoxActionPerformed(evt);
             }
         });
-        add(collectorTypeComboBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 40, 140, -1));
+        add(collectorTypeComboBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 50, 160, -1));
 
         resourcesButton.setText("Enumerate Host Resources");
         resourcesButton.addActionListener(new java.awt.event.ActionListener() {
@@ -143,18 +125,18 @@ public class MainHostPanel extends javax.swing.JPanel {
                 resourcesButtonActionPerformed(evt);
             }
         });
-        add(resourcesButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 80, 380, -1));
+        add(resourcesButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 90, 450, -1));
 
         processorsTitleLabel.setText("Processor list");
-        add(processorsTitleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 120, 180, -1));
-        add(processorsPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 140, 180, 150));
+        add(processorsTitleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, 200, -1));
+        add(processorsPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 150, 200, 150));
 
         storageTitleLabel.setText("Storage/Memory list");
-        add(storageTitleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 120, 180, -1));
-        add(storagePane, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 140, 180, 150));
+        add(storageTitleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 130, 200, -1));
+        add(storagePane, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 150, 200, 150));
 
         storeDataCheckBox.setText("Store collected data");
-        add(storeDataCheckBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 300, 180, -1));
+        add(storeDataCheckBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 310, 180, -1));
 
         processorButton.setText("Processor Graph");
         processorButton.addActionListener(new java.awt.event.ActionListener() {
@@ -162,7 +144,7 @@ public class MainHostPanel extends javax.swing.JPanel {
                 processorButtonActionPerformed(evt);
             }
         });
-        add(processorButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 340, 180, -1));
+        add(processorButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 350, 200, -1));
 
         storageButton.setText("Storage/Memory Graph");
         storageButton.addActionListener(new java.awt.event.ActionListener() {
@@ -170,20 +152,18 @@ public class MainHostPanel extends javax.swing.JPanel {
                 storageButtonActionPerformed(evt);
             }
         });
-        add(storageButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 340, 180, -1));
+        add(storageButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 350, 200, -1));
 
         jLabel1.setText("Type");
-        add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 40, -1, 20));
+        add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 50, -1, 20));
     }// </editor-fold>//GEN-END:initComponents
     
-    private void deviceFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deviceFieldFocusLost
-        retrieveCommunity();
-    }//GEN-LAST:event_deviceFieldFocusLost
+    private void initComponentsFinish() {
+        deviceSelectorPanel = new DeviceSelectorPanel(false);
+        add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 450, -1));
+    }
     
-    private void deviceFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceFieldActionPerformed
-        retrieveCommunity();
-    }//GEN-LAST:event_deviceFieldActionPerformed
-    
+            
     private void collectorTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collectorTypeComboBoxActionPerformed
         device = null;
         processorsTitleLabel.setText("Processor list");
@@ -193,6 +173,8 @@ public class MainHostPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_collectorTypeComboBoxActionPerformed
     
     private void storageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_storageButtonActionPerformed
+        //DeviceSelectorModel deviceSelector;
+        //String deviceName;
         DataCollector collector;
         DataSets data;
         TimeSeriesContext context;
@@ -204,7 +186,8 @@ public class MainHostPanel extends javax.swing.JPanel {
         int pollInterval;
         
         pollInterval = Integer.parseInt(pollField.getText());
-        //pollInterval = Integer.parseInt(pollField.getText()) * 1000;
+        //deviceSelector = deviceSelectorPanel.getModel();
+        //deviceName = deviceSelector.getName();
         if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {
             try {
                 storageIndex = memoryHRSNMP.getStorageIndex()[((JList)(storagePane.getViewport().getView())).getSelectedIndex()];
@@ -222,11 +205,11 @@ public class MainHostPanel extends javax.swing.JPanel {
                 ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                         "Error opening database connection", e);
             } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                        "Unknown host " + deviceField.getText());
+                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
+                        "Unknown host " + device.getName());
             } catch (SNMPException e) {
                 ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceField.getText(), e);
+                        "Cannot access SNMP service on device " + device.getName(), e);
             }
         }
         
@@ -249,11 +232,11 @@ public class MainHostPanel extends javax.swing.JPanel {
                 ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                         "Error opening database connection", e);
             } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                        "Unknown host " + deviceField.getText());
+                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
+                        "Unknown host " + device.getName());
             } catch (SNMPException e) {
                 ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceField.getText(), e);
+                        "Cannot access SNMP service on device " + device.getName(), e);
             }
         }
         
@@ -275,20 +258,22 @@ public class MainHostPanel extends javax.swing.JPanel {
                 ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                         "Error opening database connection", e);
             } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                        "Unknown host " + deviceField.getText());
+                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
+                        "Unknown host " + device.getName());
             } catch (SNMPException e) {
                 ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceField.getText(), e);
+                        "Cannot access SNMP service on device " + device.getName(), e);
             } catch (ClassCastException e) {
                 ErrorHandler.modalError(null, "Please ensure that the device supports Cisco memory MIB",
-                        "Cannot find Cisco memory pool information on device " + deviceField.getText(), e);
+                        "Cannot find Cisco memory pool information on device " + device.getName(), e);
             }
         }
     }//GEN-LAST:event_storageButtonActionPerformed
     
     /** Creates a new processor graph. */
     private void processorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processorButtonActionPerformed
+        DeviceSelectorModel deviceSelector;
+        String deviceName;
         DataCollector collector;
         DataSets data;
         TimeSeriesContext context;
@@ -302,6 +287,8 @@ public class MainHostPanel extends javax.swing.JPanel {
         
         //pollInterval = Integer.parseInt(pollField.getText()) * 1000;
         pollInterval = Integer.parseInt(pollField.getText());
+        deviceSelector = deviceSelectorPanel.getModel();
+        deviceName = deviceSelector.getName();
         if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {
             
             try {
@@ -320,19 +307,20 @@ public class MainHostPanel extends javax.swing.JPanel {
                 ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                         "Error opening database connection", e);
             } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                        "Unknown host " + deviceField.getText());
+                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
+                        "Unknown host " + device.getName());
             } catch (SNMPException e) {
                 ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceField.getText(), e);
+                        "Cannot access SNMP service on device " + device.getName(), e);
             } catch (ClassCastException e) {
                 ErrorHandler.modalError(null, "Please ensure that device supports processor usage in the Host Resources MIB",
-                        "Cannot find processor usage information on device " + deviceField.getText(), e);
+                        "Cannot find processor usage information on device " + device.getName(), e);
             }
             
         } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_UCD ) {
             try {
-                currentDevice = new Device(deviceField.getText(), communityField.getText(), null, false);
+                //currentDevice = new Device(deviceField.getText(), communityField.getText(), null, false);
+                currentDevice = deviceSelector.loadDevice();
                 processorUCDSNMP = new ProcessorUCDSNMP(currentDevice);
                 collector = new ProcessorUCDCollector(processorUCDSNMP, (long)pollInterval);
                 data = new DataSets(DataType.NETSNMP_PROCESSOR, collector, currentDevice, pollInterval, null, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
@@ -342,15 +330,16 @@ public class MainHostPanel extends javax.swing.JPanel {
                 ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                         "Error opening database connection", e);
             } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                        "Unknown host " + deviceField.getText());
+                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceName + "\" is valid",
+                        "Unknown host " + deviceName);
             } catch (SNMPException e) {
                 ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceField.getText(), e);
+                        "Cannot access SNMP service on device " + deviceName, e);
             }
         } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_CISCO ) {
             try {
-                currentDevice = new Device(deviceField.getText(), communityField.getText(), null, false);
+                //currentDevice = new Device(deviceField.getText(), communityField.getText(), null, false);
+                currentDevice = deviceSelector.loadDevice();
                 processorCiscoSNMP = new ProcessorCiscoSNMP(currentDevice);
                 collector = new ProcessorCiscoCollector(processorCiscoSNMP, pollInterval);
                 data = new DataSets(DataType.PROCESSOR, collector, currentDevice, pollInterval, null, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
@@ -360,11 +349,11 @@ public class MainHostPanel extends javax.swing.JPanel {
                 ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                         "Error opening database connection", e);
             } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                        "Unknown host " + deviceField.getText());
+                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceName + "\" is valid",
+                        "Unknown host " + deviceName);
             } catch (SNMPException e) {
                 ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceField.getText(), e);
+                        "Cannot access SNMP service on device " + deviceName, e);
             }
         }
         
@@ -372,62 +361,70 @@ public class MainHostPanel extends javax.swing.JPanel {
     
     /** Enumerates interfaces on the given device via SNMP. */
     private void resourcesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resourcesButtonActionPerformed
+        DeviceSelectorModel deviceSelector;
+        String deviceName;
         JList processorsList;
         JList storageList;
         //ProcessorHRSNMP processorSNMP;
-        
+
+        deviceSelector = deviceSelectorPanel.getModel();
+        deviceName = deviceSelector.getName();
         try {
             if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {
-                device = new Device(deviceField.getText(), communityField.getText(), null, false);
-                //device.enumerateHostProcessors();
+                //device = new Device(deviceField.getText(), communityField.getText(), null, false);
+                device = deviceSelector.loadDevice();
                 processorHRSNMP = new ProcessorHRSNMP(device);
                 processorHRSNMP.enumerateHostProcessors();
-                processorsTitleLabel.setText("Processor list for " + device.getName());
+                processorsTitleLabel.setText("Processor list for " + deviceName);
                 processorsList = new javax.swing.JList(processorHRSNMP.getProcessorsDescr());
                 processorsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 processorsPane.setViewportView((java.awt.Component)processorsList);
                 
-                //device.enumerateHostStorage();
                 memoryHRSNMP = new MemoryHRSNMP(device);
                 memoryHRSNMP.enumerateHostStorage();
-                storageTitleLabel.setText("Storage list for " + device.getName());
+                storageTitleLabel.setText("Storage list for " + deviceName);
                 storageList = new javax.swing.JList(memoryHRSNMP.getStorageDescr());
                 storageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 storagePane.setViewportView((java.awt.Component)storageList);
             } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_UCD ) {
-                device = new Device(deviceField.getText(), communityField.getText(), null, false);
-                processorsTitleLabel.setText("Processor list for " + device.getName());
+                //device = new Device(deviceField.getText(), communityField.getText(), null, false);
+                device = deviceSelector.loadDevice();
+                processorsTitleLabel.setText("Processor list for " + deviceName);
                 processorsList = new javax.swing.JList(NO_CHOICE);
                 processorsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 processorsPane.setViewportView((java.awt.Component)processorsList);
-                storageTitleLabel.setText("Memory list for " + device.getName());
+                storageTitleLabel.setText("Memory list for " + deviceName);
                 storageList = new javax.swing.JList(MemoryUCDCollector.UCD_MEMORY_TYPES);
                 storageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 storagePane.setViewportView((java.awt.Component)storageList);
             } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_CISCO ) {
-                device = new Device(deviceField.getText(), communityField.getText(), null, false);
-                //device.enumerateCiscoMemoryPools();
+                //device = new Device(deviceField.getText(), communityField.getText(), null, false);
+                device = deviceSelector.loadDevice();
                 memoryCiscoSNMP = new MemoryCiscoSNMP(device);
                 memoryCiscoSNMP.enumerateCiscoMemoryPools();
-                storageTitleLabel.setText("Memory pools for " + device.getName());
+                storageTitleLabel.setText("Memory pools for " + deviceName);
                 storageList = new javax.swing.JList(memoryCiscoSNMP.getStorageDescr());
                 storageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 storagePane.setViewportView((java.awt.Component)storageList);
-                processorsTitleLabel.setText("Processor list for " + device.getName());
+                processorsTitleLabel.setText("Processor list for " + deviceName);
                 processorsList = new javax.swing.JList(NO_CHOICE);
                 processorsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 processorsPane.setViewportView((java.awt.Component)processorsList);
             }
+        } catch (DBException e) {
+            ErrorHandler.modalError(this, "Ensure that database is reachable",
+                    "Cannot retrieve " + deviceName + " from database");
         } catch (UnknownHostException e) {
-            ErrorHandler.modalError(this, "Ensure that device \"" + deviceField.getText() + "\" exists",
-                    "Cannot connect to device " + deviceField.getText());
+            ErrorHandler.modalError(this, "Ensure that device \"" + deviceName + "\" exists",
+                    "Cannot connect to device " + deviceName);
         } catch (SNMPException e) {
             ErrorHandler.modalError(this, "Ensure that device name and community string are correct",
-                    "Cannot connect to device " + deviceField.getText());
+                    "Cannot connect to device " + deviceName);
         }
         
     }//GEN-LAST:event_resourcesButtonActionPerformed
     
+    /*
     public void retrieveCommunity() {
         String community;
         Device candidate;
@@ -441,13 +438,10 @@ public class MainHostPanel extends javax.swing.JPanel {
         } catch (DBException e) {
         }
     }
+    */
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox collectorTypeComboBox;
-    private javax.swing.JTextField communityField;
-    private javax.swing.JLabel communityLabel;
-    private javax.swing.JTextField deviceField;
-    private javax.swing.JLabel deviceLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField pollField;
     private javax.swing.JLabel pollLabel;

@@ -27,10 +27,13 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
     
     protected int selectionMode;
     
+    protected boolean useWriteAuth;
+    
     /** Creates new form PortsSelectorPanel */
-    public PortsSelectorPanel(boolean retrieveRWCommunity, int selectionMode) {
-        model = new PortsSelectorModel(retrieveRWCommunity);
+    public PortsSelectorPanel(boolean useWriteAuth, int selectionMode) {
+        this.useWriteAuth = useWriteAuth;
         this.selectionMode = selectionMode;
+        model = new PortsSelectorModel(useWriteAuth);
         initComponents();
         initComponentsFinish();
     }
@@ -46,11 +49,9 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
         portsPane = new javax.swing.JScrollPane();
         portsButton = new javax.swing.JButton();
         portsTitleLabel = new javax.swing.JLabel();
-        communityField = new javax.swing.JTextField();
-        deviceField = new javax.swing.JTextField();
 
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        add(portsPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 110, 410, 200));
+        add(portsPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 120, 410, 200));
 
         portsButton.setText("Enumerate Ports");
         portsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -58,42 +59,21 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
                 portsButtonActionPerformed(evt);
             }
         });
-        add(portsButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, 410, 30));
+        add(portsButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 410, 30));
 
         portsTitleLabel.setText("Port list");
-        add(portsTitleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 90, 180, -1));
-
-        communityField.setText("public");
-        add(communityField, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 10, 60, -1));
-
-        deviceField.setText("localhost");
-        deviceField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deviceFieldActionPerformed(evt);
-            }
-        });
-        deviceField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                deviceFieldFocusLost(evt);
-            }
-        });
-        add(deviceField, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 10, 70, -1));
+        add(portsTitleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, 180, -1));
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void deviceFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deviceFieldFocusLost
-        retrieveCommunity();
-    }//GEN-LAST:event_deviceFieldFocusLost
-    
-    private void deviceFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceFieldActionPerformed
-        retrieveCommunity();
-    }//GEN-LAST:event_deviceFieldActionPerformed
-    
+            
     private void portsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portsButtonActionPerformed
         JList portsList;
         JTable portsTable;
+        DeviceSelectorModel deviceSelector;
         
+        deviceSelector = deviceSelectorPanel.getModel();
         try {
-            model.setDevice(deviceField.getText(), communityField.getText());
+            //model.setDevice(deviceField.getText(), communityField.getText());
+            model.setDevice(deviceSelector.loadDevice());
             model.enumeratePorts();
             portsTitleLabel.setText("Port list for " + model.getDevice().getName());
             
@@ -111,31 +91,34 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
             }
             
         } catch (UnknownHostException e) {
-            ErrorHandler.modalError(this, "Ensure that device \"" + deviceField.getText() + "\" exists",
-                    "Cannot connect to device " + deviceField.getText());
+            ErrorHandler.modalError(this, "Ensure that device \"" + deviceSelector.getName() + "\" exists",
+                    "Cannot connect to device " + deviceSelector.getName());
         } catch (SNMPException e) {
             ErrorHandler.modalError(this, "Ensure that device name and community string are correct",
-                    "Cannot connect to device " + deviceField.getText());
+                    "Cannot connect to device " + deviceSelector.getName());
         } catch (DBException e) {
             ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                    "Error opening database connection", e);
+                    "Error opening da   tabase connection", e);
         }
     }//GEN-LAST:event_portsButtonActionPerformed
 
-    public void initComponentsFinish() {
-        deviceSelectorPanel = new DeviceSelectorPanel();
-        add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 300, -1));
+    private void initComponentsFinish() {
+        deviceSelectorPanel = new DeviceSelectorPanel(useWriteAuth);
+        add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 410, -1));
     }
 
     public PortsSelectorModel getModel() {
         return model;
     }
     
+    /*
     public void retrieveCommunity() {
         String newCommunity;
+        DeviceSelectorModel deviceSelector;
         
         try {
-            newCommunity = model.retrieveCommunity(deviceField.getText());
+            deviceSelector = deviceSelectorPanel.getModel();
+            newCommunity = model.retrieveCommunity(deviceSelector.getName());
             if ( newCommunity != null )
                 communityField.setText(newCommunity);
         } catch (DBException e) {
@@ -144,6 +127,7 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
         }
         
     }
+    */
     
     public int rowSelected() {
         if ( portsPane.getViewport().getView() instanceof JList )
@@ -206,8 +190,6 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField communityField;
-    private javax.swing.JTextField deviceField;
     private javax.swing.JButton portsButton;
     private javax.swing.JScrollPane portsPane;
     private javax.swing.JLabel portsTitleLabel;

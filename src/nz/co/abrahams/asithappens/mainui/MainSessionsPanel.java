@@ -1,5 +1,5 @@
 /*
- * MainDatabasePanel.java
+ * MainSessionsPanel.java
  *
  * Created on 17 Sep 2006, 00:01
  *

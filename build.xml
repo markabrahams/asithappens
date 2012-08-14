@@ -42,7 +42,7 @@
     </target>
 
     <target name="build" depends="init" description="Compile Java classes">
-        <javac srcdir="${src}" destdir="${build}" deprecation="on" debug="true" debuglevel="lines,vars,source" target="${targetversion}">
+        <javac srcdir="${src}" destdir="${build}" deprecation="on" debug="true" debuglevel="lines,vars,source" target="${targetversion}" includeantruntime="false">
             <!--> <compilerarg line="-Xlint:deprecation -Xlint:unchecked"/> <-->
             <classpath refid="classpath.common" />
         </javac>

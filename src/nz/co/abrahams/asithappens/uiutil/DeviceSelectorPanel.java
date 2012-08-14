@@ -21,14 +21,15 @@ package nz.co.abrahams.asithappens.uiutil;
 
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JButton;
+import javax.swing.*;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.mainui.SNMPAuthenticationDialog;
+import nz.co.abrahams.asithappens.storage.Device;
 
 /**
  *
@@ -40,10 +41,15 @@ public class DeviceSelectorPanel extends JPanel {
 
     private JTextField nameField;
 
-    private JButton selectorButton;
+    private JButton authButton;
+    
+    private boolean useWriteAuth;
+    
+    private Device device;
 
-    public DeviceSelectorPanel() {
+    public DeviceSelectorPanel(boolean useWriteAuth) {
         initComponents();
+        this.useWriteAuth = useWriteAuth;
     }
 
     private void initComponents() {
@@ -55,15 +61,17 @@ public class DeviceSelectorPanel extends JPanel {
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
+        constraints.insets = new Insets(0,0,10,0);
         add(deviceLabel, constraints);
 
         nameField = new JTextField();
         nameField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                //nameFieldActionPerformed(evt);
+                editDialog();
             }
         });
         nameField.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent evt) {
                 //nameFieldFocusLost(evt);
             }
@@ -71,17 +79,54 @@ public class DeviceSelectorPanel extends JPanel {
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 0;
+        constraints.insets = new Insets(0,10,10,0);
         constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.ipadx = 6;
+        constraints.ipady = 6;
         constraints.weightx = 1;
         add(nameField, constraints);
 
-        selectorButton = new JButton();
-        selectorButton.setText("...");
+        authButton = new JButton();
+        authButton.setText("Auth");
+        authButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                editDialog();
+            }
+        });        
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
         constraints.gridy = 0;
-        add(selectorButton, constraints);
+        constraints.anchor = GridBagConstraints.PAGE_START;
+        constraints.insets = new Insets(0,10,0,0);
+        add(authButton, constraints);
+    }
+    
+    public DeviceSelectorModel getModel() {
+        return new DeviceSelectorModel(nameField.getText(), useWriteAuth);
     }
 
+    private void editDialog() {
+        SNMPAuthenticationDialog dialog;
 
+        if ( nameField.getText().isEmpty() ) {
+            ErrorHandler.modalError(this, "Please enter a device name", "Empty device name");
+            return;
+        }
+
+        dialog = new SNMPAuthenticationDialog((JFrame)(SwingUtilities.getWindowAncestor(this)), true, nameField.getText(), useWriteAuth);
+        dialog.setVisible(true);
+        
+    }
+    
+    /*
+    public String retrieveCommunity(String deviceName) throws DBException {
+        Device temporaryDevice;
+        
+        temporaryDevice = new Device(deviceName);
+        if ( useWriteAuth )
+            return temporaryDevice.retrieveWriteCommunity();
+        else
+            return temporaryDevice.retrieveReadCommunity();
+    }
+    */
 }

@@ -139,7 +139,7 @@ public class NetFlowCollectorDAO implements DataCollectorDAO {
         ifDescr = (String)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_IFDESCR, sessionID));
         direction = ((Integer)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_DIRECTION, sessionID))).intValue();
         tableSize = ((Integer)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_TABLESIZE, sessionID))).intValue();
-        portsSNMP = new PortsSelectorSNMP(device);
+        portsSNMP = new PortsSelectorSNMP(device, true);
         /*
         device.enumeratePorts();
         ifIndex = -1;

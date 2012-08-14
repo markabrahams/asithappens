@@ -47,14 +47,14 @@ public class MainAboutPanel extends javax.swing.JPanel {
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         titleLabel.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
-        titleLabel.setText("AsItHappens 0.57");
+        titleLabel.setText("AsItHappens 0.58");
         add(titleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 30, -1, -1));
 
-        descriptionLabel.setFont(new java.awt.Font("Dialog", 1, 14));
+        descriptionLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
         descriptionLabel.setText("Real-time network performance monitor");
         add(descriptionLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 80, -1, -1));
 
-        copyrightLabel.setText("(c) 2006-2010 Mark Abrahams");
+        copyrightLabel.setText("(c) 2006-2012 Mark Abrahams");
         add(copyrightLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 110, -1, -1));
 
         logoLabel.setIcon(new javax.swing.ImageIcon("images/logo.png"));

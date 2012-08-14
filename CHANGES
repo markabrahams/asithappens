@@ -1,3 +1,17 @@
+0.58 release
+============
+
+Bug fixes:
+Fixed session graph creation on a narrowed range incorrectly changes the parent session range
+
+Added features:
+SNMPv3 support (suggested by George)
+
+Code changes:
+Updated SNMP4J library version to 2.1.0 for 3DES support
+Classes added: CollectorsTabbedPanel, DeviceSelectorPanel, DeviceSelectorModel,
+               SNMPVersion, USMAuthProtocol, USMLevel, USMPrivProtocol,
+               USMUser, USMUserDAO, SNMPAuthenticationDialog
 0.57 release
 ============
 

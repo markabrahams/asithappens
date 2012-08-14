@@ -1,4 +1,4 @@
-AsItHappens Usage Tips (version 0.57)
+AsItHappens Usage Tips (version 0.58)
 ======================
 
 Here are some usage tips for AsItHappens:
@@ -29,6 +29,8 @@ General usage
 - AsItHappens can poll on some graph types in the order of milliseconds.  This has the potential to hose
   your network if you're too aggresive.  The good thing is that with AsItHappens you'll be able measure
   exactly _how_ badly you've hosed your network.
+- Due to varying support of the SNMPv3 privacy protocols in devices, when having problems using SNMPv3 AuthPriv,
+  you might try falling back to a weaker encryption algorithm, as these usually have better device support.
 
 Response collection
 ===================
