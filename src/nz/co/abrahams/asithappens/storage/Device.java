@@ -22,10 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import nz.co.abrahams.asithappens.core.DAOFactory;
 import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.snmputil.SNMPAccess;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.snmputil.SNMPVersion;
-import nz.co.abrahams.asithappens.snmputil.USMUser;
+import nz.co.abrahams.asithappens.snmputil.*;
 import org.apache.log4j.Logger;
 import org.doomdark.uuid.EthernetAddress;
 
@@ -209,9 +206,17 @@ public class Device {
      */
     public SNMPAccess createSNMPReadInterface() throws UnknownHostException, SNMPException {
         if (snmpVersion == SNMPVersion.v1) {
-            return new SNMPAccess(getResolvedAddress(), communityRead);
+            if ( communityRead != null ) {
+                return new SNMPAccess(getResolvedAddress(), communityRead);
+            } else {
+                throw new SNMPNoCredentialsException("No read-only community found");
+            }
         } else {
-            return new SNMPAccess(getResolvedAddress(), usmUserRead);
+            if ( usmUserRead != null ) {
+                return new SNMPAccess(getResolvedAddress(), usmUserRead);
+            } else {
+                throw new SNMPNoCredentialsException("No read-only user found");
+            }
         }
     }
 
@@ -222,9 +227,17 @@ public class Device {
      */
     public SNMPAccess createSNMPWriteInterface() throws UnknownHostException, SNMPException {
         if (snmpVersion == SNMPVersion.v1) {
-            return new SNMPAccess(getResolvedAddress(), communityWrite);
+            if ( communityWrite != null ) {
+                return new SNMPAccess(getResolvedAddress(), communityWrite);
+            } else {
+                throw new SNMPNoCredentialsException("No read-write community found");                
+            }
         } else {
-            return new SNMPAccess(getResolvedAddress(), usmUserWrite);
+            if ( usmUserRead != null ) {
+                return new SNMPAccess(getResolvedAddress(), usmUserWrite);
+            } else {
+                throw new SNMPNoCredentialsException("No read-write user found");                
+            }
         }
     }
 

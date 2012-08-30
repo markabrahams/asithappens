@@ -1,5 +1,5 @@
 /*
- * NBARSNMP.java
+ * NetFlowSNMP.java
  *
  * Created on 09 January 2010, 13:12
  *

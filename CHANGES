@@ -1,3 +1,21 @@
+0.59 release
+============
+
+Bug fixes:
+Fixed no storing of read community in Host panel
+
+Added features:
+Added IP Accounting polling
+Added MAC Accounting polling (suggested by Kristian Larsson)
+Added IP Precedence Accounting polling
+
+Code changes:
+Implemented more efficient SNMP table retrieval - GetBulk if SNMPv2c available
+
+Packages added: accounting
+Classes added: SNMPTableRow, SNMPTableCollector, SNMPTableCollectorDAO, SNMPTableInterface,
+               SNMPTableRecord, CollectorsTabbedPanel, CollectorsCiscoTabbedPanel, Direction
+
 0.58 release
 ============
 

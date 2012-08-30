@@ -1,4 +1,4 @@
-AsItHappens Usage Tips (version 0.58)
+AsItHappens Usage Tips (version 0.59)
 ======================
 
 Here are some usage tips for AsItHappens:
@@ -100,6 +100,14 @@ Netflow collection
     ip_protocol[tos_byte] src_address(src_port) -> dst_address(dst_port)
 - the "Categorize by" options enable you to group similar flows as part of a single data set
 - the "Match Criteria" enable you to specify only certain flows to analyze
+
+Accounting collection
+=====================
+- only Cisco accounting collection is supported
+- three types of accounting information are supported: IP accounting, IP precedence accounting, and MAC accounting
+- all accounting configuration must be done separately via CLI with the "ip accounting" interface command
+- IP accounting can be collected in two ways - active and checkpoint - use only one at a time on any device
+- only IP accounting checkpoint database collection requires read-write access; all others use read-only
 
 OID collection
 ==============

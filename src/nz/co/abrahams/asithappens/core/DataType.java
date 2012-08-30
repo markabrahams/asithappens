@@ -41,9 +41,12 @@ public class DataType {
     public static final DataType NETSNMP_PROCESSOR = new DataType(6, "Net-SNMP processor load", new String[]{"User", "Nice", "System", "Wait", "Kernel", "Interrupt"}, "%age", false, false, SetDisplay.Positioning.Stacked, SetDisplay.NETSNMP_PROCESSOR_DEFAULTS, XAxisScaling.ConstantPixelWidth, Aggregation.Maximum, Interpolation.Flat);
     public static final DataType STORAGE = new DataType(7, "Storage/Memory", new String[]{"Used"}, "bytes", true, true, SetDisplay.Positioning.Grounded, SetDisplay.STORAGE_DEFAULTS, XAxisScaling.ConstantPixelWidth, Aggregation.Maximum, Interpolation.Flat);
     public static final DataType OID = new DataType(8, "Custom OID", new String[]{}, "?", true, false, SetDisplay.Positioning.Stacked, SetDisplay.DYNAMIC_DEFAULTS, XAxisScaling.ConstantPixelWidth, Aggregation.Maximum, Interpolation.Flat);
-    
+    public static final DataType ACCOUNTING = new DataType(9, "IP Accounting", new String[]{}, "bps", true, false, SetDisplay.Positioning.Stacked, SetDisplay.DYNAMIC_DEFAULTS, XAxisScaling.ConstantPixelWidth, Aggregation.Average, Interpolation.None);
+    public static final DataType MAC_ACCOUNTING = new DataType(10, "MAC Accounting", new String[]{}, "bps", true, false, SetDisplay.Positioning.Stacked, SetDisplay.DYNAMIC_DEFAULTS, XAxisScaling.ConstantPixelWidth, Aggregation.Average, Interpolation.None);
+    public static final DataType IPPREC_ACCOUNTING = new DataType(11, "IP Precedence Accounting", new String[]{}, "bps", true, false, SetDisplay.Positioning.Stacked, SetDisplay.DYNAMIC_DEFAULTS, XAxisScaling.ConstantPixelWidth, Aggregation.Average, Interpolation.None);
+
     /** Ordered array of types */
-    public static DataType[] types = { BANDWIDTH, RESPONSE, NBAR, NETFLOW, CAPTURE, PROCESSOR, NETSNMP_PROCESSOR, STORAGE, OID };
+    public static DataType[] types = { BANDWIDTH, RESPONSE, NBAR, NETFLOW, CAPTURE, PROCESSOR, NETSNMP_PROCESSOR, STORAGE, OID, ACCOUNTING, MAC_ACCOUNTING, IPPREC_ACCOUNTING };
     
     /** Logging provider */
     protected Logger logger;
@@ -131,4 +134,5 @@ public class DataType {
         buffer.append("},units=" + units);
         return buffer.toString();
     }
+
 }

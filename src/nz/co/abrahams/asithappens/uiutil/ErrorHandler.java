@@ -60,10 +60,10 @@ public class ErrorHandler {
     }
     
     public static void nonModalError(String body, String title, Exception e) {
-        JOptionPane errorDialog = new JOptionPane();
-        errorDialog.showMessageDialog(null, body, title, JOptionPane.ERROR_MESSAGE);
+        //JOptionPane errorDialog = new JOptionPane();
+        JOptionPane.showMessageDialog(null, body, title, JOptionPane.ERROR_MESSAGE);
     }
-    
+        
     /**
      * Dumps a list of active threads in the current thread's ThreadGroup.
      */

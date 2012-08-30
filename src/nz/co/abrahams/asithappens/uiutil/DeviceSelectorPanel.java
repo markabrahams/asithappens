@@ -104,6 +104,10 @@ public class DeviceSelectorPanel extends JPanel {
     public DeviceSelectorModel getModel() {
         return new DeviceSelectorModel(nameField.getText(), useWriteAuth);
     }
+    
+    public void setUseWriteAuth(boolean newUseWriteAuth) {
+        useWriteAuth = newUseWriteAuth;
+    }
 
     private void editDialog() {
         SNMPAuthenticationDialog dialog;

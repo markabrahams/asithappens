@@ -75,6 +75,11 @@ public class DataHeadings {
         return map.get(key).intValue();
     }
     
+    /** Checks for existence of specified key */
+    public boolean hasKey(String key) {
+        return map.containsKey(key);
+    }
+    
     /** Returns the number of headings in the list. */
     public int size() {
         return name.size();

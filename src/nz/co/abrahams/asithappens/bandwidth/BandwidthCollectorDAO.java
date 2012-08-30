@@ -104,7 +104,7 @@ public class BandwidthCollectorDAO implements DataCollectorDAO {
     }
     
     /**
-     * Retrieves a BandwidthCollector defintion from the database.
+     * Retrieves a BandwidthCollector definition from the database.
      *
      * @param sessionID      the session ID of the collector
      * @return               the collector created from the database definition
@@ -129,17 +129,6 @@ public class BandwidthCollectorDAO implements DataCollectorDAO {
         prefer64BitCounters = ((Byte)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_USE64BITCOUNTERS, sessionID))).intValue() == 1;
         ifDescriptions = retrieveBandwidthCollectorPorts(sessionID);
         portsSNMP = new PortsSelectorSNMP(device, false);
-        /*
-        portsSNMP.enumeratePorts();
-        ifIndicies = new int[ifDescriptions.length];
-        for ( int i = 0 ; i < portsSNMP.getPortsIndex().length ; i++ ) {
-            for ( int j = 0 ; j < ifDescriptions.length ; j++ ) {
-                if ( portsSNMP.getPortsDescr()[i].equals(ifDescriptions[j]) ) {
-                    ifIndicies[j] = portsSNMP.getPortsIndex()[i];
-                }
-            }
-        }
-         */
         ifIndicies = portsSNMP.getIfIndexArray(ifDescriptions);
 
         bandwidthSNMP = new BandwidthSNMP(device);

@@ -111,6 +111,10 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
         return model;
     }
     
+    public DeviceSelectorModel getDeviceModel() {
+        return deviceSelectorPanel.getModel();
+    }
+    
     /*
     public void retrieveCommunity() {
         String newCommunity;

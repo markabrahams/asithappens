@@ -6,14 +6,13 @@ Saving graph templates
 Non-zero graph origin (graph bottom fixing, auto scaling for negative values)
 Add internationalization (suggested by Thierry Uso)
 Add French translation (suggested by Thierry Uso)
-Implement MAC address accounting polling (suggested by Kristian Larsson)
 Add export/import function for database transfer to another host (suggested by Karl Bousader)
 Add minimum polling interval config option (suggested by Carlos Sola)
 Add other interface variables e.g. packets per second, errors (suggested by Paul Cainkar)
 Add option to force deletion of collecting session (suggested by Miguel Angel)
 Add CLI option to run it on a headless server (suggested by Cristian Rojas)
 Add option to use ifAlias instead of ifDescr in graph titles by default (suggested by Yuri)
-Add option to save current layount on exit (suggested by Yuri)
+Add option to save current layout on exit (suggested by Yuri)
 Implement CBWFQ MIB polling
 Implement HTTP response polling
 Add Debian package creation
@@ -28,6 +27,8 @@ Add perpetual file polling and graphing for packet capture graphs
 
 
 BUG FIXES
+Application doesn't run under Windows 8 (reported by Paul Cainkar)
+Response collection doesn't work under Windows 7 (reported by Peter Williams)
 Graph panel not correctly callibrated with y-axis
 JVM crash in Self Defending Network when sound is enabled
 Crash when opening some capture files over a Windows DFS share
@@ -40,7 +41,6 @@ No NBAR capability checking during NBAR collector initialization
 Resizing graphs of large packet captures causes application to freeze for a long time
 Clicking on the database tab after application has been open a long time produces an error (reported by Abigail Whyld)
 NullPointerException when opening two packet capture graphs concurrently
-No storing of read community in Host panel
 
 
 TIDYING

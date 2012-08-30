@@ -735,9 +735,11 @@ public class DataSets implements Runnable {
         }
         description = new StringBuffer();
         description.append(dataType.description + " for " + device.getName());
-        if (dataType == DataType.BANDWIDTH || dataType == DataType.NBAR || dataType == DataType.NETFLOW || dataType == DataType.STORAGE && portString != null) {
+        if (dataType == DataType.BANDWIDTH || dataType == DataType.NBAR || dataType == DataType.NETFLOW || dataType == DataType.STORAGE ||
+                    dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING && portString != null) {
             description.append(" (" + portString);
-            if (dataType == DataType.NBAR || dataType == DataType.NETFLOW) {
+            if (dataType == DataType.NBAR || dataType == DataType.NETFLOW ||
+                    dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING) {
                 description.append(",");
                 description.append(DataSets.DIRECTIONS[direction]);
             }
@@ -813,9 +815,11 @@ public class DataSets implements Runnable {
         if (deviceName != null) {
             description.append(" for " + deviceName);
         }
-        if (dataType == DataType.BANDWIDTH || dataType == DataType.NBAR || dataType == DataType.NETFLOW || dataType == DataType.STORAGE && portName != null) {
+        if (dataType == DataType.BANDWIDTH || dataType == DataType.NBAR || dataType == DataType.NETFLOW || dataType == DataType.STORAGE ||
+                dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING && portName != null) {
             description.append(" (" + portName);
-            if (dataType == DataType.NBAR || dataType == DataType.NETFLOW) {
+            if (dataType == DataType.NBAR || dataType == DataType.NETFLOW ||
+                    dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING) {
                 description.append(",");
                 description.append(DataSets.DIRECTIONS[direction]);
             }

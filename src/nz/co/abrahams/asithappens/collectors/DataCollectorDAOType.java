@@ -19,6 +19,7 @@
 
 package nz.co.abrahams.asithappens.collectors;
 
+import nz.co.abrahams.asithappens.accounting.*;
 import nz.co.abrahams.asithappens.core.DAOCreationException;
 import nz.co.abrahams.asithappens.bandwidth.BandwidthCollector;
 import nz.co.abrahams.asithappens.response.ResponseCollector;
@@ -62,8 +63,11 @@ public enum DataCollectorDAOType {
     MEMORY_HR(9, MemoryHRCollector.class, MemoryHRCollectorDAO.class),
     MEMORY_UCD(10, MemoryUCDCollector.class, MemoryUCDCollectorDAO.class),
     MEMORY_CISCO(11, MemoryCiscoCollector.class, MemoryCiscoCollectorDAO.class),
-    CUSTOM_OID(12, CustomOIDCollector.class, CustomOIDCollectorDAO.class);
-
+    CUSTOM_OID(12, CustomOIDCollector.class, CustomOIDCollectorDAO.class),
+    IP_ACCOUNTING(13, IPAccountingCheckpointCollector.class, IPAccountingCheckpointCollectorDAO.class),
+    IPPREC_ACCOUNTING(14, IPPrecAccountingCollector.class, IPPrecAccountingCollectorDAO.class),
+    MAC_ACCOUNTING(15, MACAccountingCollector.class, MACAccountingCollectorDAO.class),
+    SNMP_TABLE(16, SNMPTableCollector.class, SNMPTableCollectorDAO.class);
 
     int id;
 

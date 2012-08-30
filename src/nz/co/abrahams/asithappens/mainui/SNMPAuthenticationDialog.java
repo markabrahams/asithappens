@@ -49,7 +49,8 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         this.deviceName = deviceName;
         this.useWrite = useWrite;
         initComponents();
-        nameLabel.setText("Device: " + deviceName);
+        setTitle("SNMP authentication - " + accessDescription());
+        nameLabel.setText("Device: " + deviceName + " (" + accessDescription() + ")");
         version1Button.setSelected(true);
 
         initialiseCombos();
@@ -115,7 +116,6 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         communityLabel.setText("Community");
         getContentPane().add(communityLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 80, -1, -1));
 
-        communityField.setText("public");
         communityField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 communityFieldActionPerformed(evt);
@@ -125,8 +125,6 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
 
         userLabel.setText("User");
         getContentPane().add(userLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 170, -1, -1));
-
-        userField.setText("public");
         getContentPane().add(userField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 170, 200, -1));
 
         userTypeLabel.setText("Type");
@@ -204,6 +202,14 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         selectUSMLevel();
     }//GEN-LAST:event_typeComboActionPerformed
 
+    private String accessDescription() {
+        if (useWrite) {
+            return "read-write";
+        } else {
+            return "read-only";
+        }
+    }
+    
     private void initialiseCombos() {
         USMAuthProtocol[] authListFull;
         USMPrivProtocol[] privListFull;

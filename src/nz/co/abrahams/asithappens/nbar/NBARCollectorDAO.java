@@ -20,22 +20,19 @@
 
 package nz.co.abrahams.asithappens.nbar;
 
-import nz.co.abrahams.asithappens.storage.DeviceDAO;
-import nz.co.abrahams.asithappens.storage.Device;
+import java.net.UnknownHostException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorDAO;
 import nz.co.abrahams.asithappens.core.DAOFactory;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.core.DBUtil;
 import nz.co.abrahams.asithappens.snmputil.PortsSelectorSNMP;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBUtil;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.sql.Connection;
-//import java.sql.Statement;
-import java.sql.PreparedStatement;
-//import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.net.UnknownHostException;
-//import java.util.Vector;
+import nz.co.abrahams.asithappens.storage.Device;
+import nz.co.abrahams.asithappens.storage.DeviceDAO;
 import org.apache.log4j.Logger;
 
 /**
@@ -51,9 +48,9 @@ public class NBARCollectorDAO implements DataCollectorDAO {
     public static final String RETRIEVE_DEVICE = "SELECT device FROM NbarCollectors WHERE sessionID = ?";
     /** Polling interval retrieval SQL statement */
     public static final String RETRIEVE_POLLINTERVAL = "SELECT pollInterval FROM NbarCollectors WHERE sessionID = ?";
-    /** Table size retrieval SQL statement */
+    /** Interface description retrieval SQL statement */
     public static final String RETRIEVE_IFDESCR = "SELECT ifDescr FROM NbarCollectors WHERE sessionID = ?";
-    /** Table size retrieval SQL statement */
+    /** Direction retrieval SQL statement */
     public static final String RETRIEVE_DIRECTION = "SELECT direction FROM NbarCollectors WHERE sessionID = ?";
     /** Table size retrieval SQL statement */
     public static final String RETRIEVE_TABLESIZE = "SELECT tableSize FROM NbarCollectors WHERE sessionID = ?";
@@ -125,15 +122,6 @@ public class NBARCollectorDAO implements DataCollectorDAO {
         direction = ((Integer)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_DIRECTION, sessionID))).intValue();
         tableSize = ((Integer)(DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_TABLESIZE, sessionID))).intValue();
         portsSNMP = new PortsSelectorSNMP(device, true);
-        /*
-        device.enumeratePorts();
-        ifIndex = -1;
-        for ( int i = 0 ; i < device.getPortsIndex().length ; i++ ) {
-            if ( device.getPortsDescr()[i].equals(ifDescr) ) {
-                ifIndex = device.getPortsIndex()[i];
-            }
-        }
-         */
         ifIndex = portsSNMP.getIfIndex(ifDescr);
         nbarSNMP = new NBARSNMP(device);
         return new NBARCollector(nbarSNMP, pollInterval, ifIndex, ifDescr, direction, tableSize);

@@ -155,7 +155,7 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
         add(setMatchCriteriaButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 250, 190, 20));
     }// </editor-fold>//GEN-END:initComponents
 
-    public void initComponentsFinish() {
+    private void initComponentsFinish() {
         portsSelectorPanel = new PortsSelectorPanel(true, ListSelectionModel.SINGLE_SELECTION);
         add(portsSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
     }
@@ -214,10 +214,6 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
                         "Confirm NetFlow Top-N table creation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.CANCEL_OPTION)
                     return;
             }
-            /*
-            ifIndex = device.getPortsIndex()[((JList)(portsPane.getViewport().getView())).getSelectedIndex()];
-            portString = (String)((JList)portsPane.getViewport().getView()).getSelectedValue();
-             */
             ifIndex = portsSelectorPanel.getIfIndex();
             portString = portsSelectorPanel.getIfDescription();
             options = new FlowOptions(ipProtocolCheckBox.isSelected(), sourceAddressCheckBox.isSelected(),
@@ -225,7 +221,6 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
             
             collector = new NetFlowCollector(snmp, ifIndex, portString, directionCombo.getSelectedIndex() + 1, Configuration.getPropertyInt("collector.netflow.table.size"), Integer.parseInt(pollField.getText()) * 1000, criteria, options);
             data = new DataSets(DataType.NETFLOW, collector, device, Integer.parseInt(pollField.getText()) * 1000, portString, directionCombo.getSelectedIndex() + 1, null, storeDataCheckBox.isSelected());
-            //data = new DataSets(3, device, Integer.parseInt(pollField.getText()) * 1000, ifIndex, portString, directionCombo.getSelectedIndex() + 1, "NetFlow Graph", storeDataCheckBox.isSelected());
             context = new TimeSeriesContext(data);
             graphFrame = new DataGraph(context);
         } catch (DBException e) {

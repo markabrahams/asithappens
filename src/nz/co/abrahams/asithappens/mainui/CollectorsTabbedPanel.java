@@ -21,9 +21,8 @@ package nz.co.abrahams.asithappens.mainui;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import nz.co.abrahams.asithappens.accounting.MainMACPrecAccountingPanel;
 import nz.co.abrahams.asithappens.bandwidth.MainBandwidthPanel;
-//import nz.co.abrahams.asithappens.capture.MainCapturePanel;
-//import nz.co.abrahams.asithappens.core.DBException;
 import nz.co.abrahams.asithappens.host.MainHostPanel;
 import nz.co.abrahams.asithappens.nbar.MainNBARPanel;
 import nz.co.abrahams.asithappens.netflow.MainNetFlowPanel;
@@ -41,9 +40,11 @@ public class CollectorsTabbedPanel extends JPanel {
     MainBandwidthPanel bandwidthPanel;
     MainResponsePanel responsePanel;
     MainHostPanel hostPanel;
-    MainNBARPanel nbarPanel;
-    MainNetFlowPanel netflowPanel;
+    //MainNBARPanel nbarPanel;
+    //MainNetFlowPanel netflowPanel;
     MainOIDPanel oidPanel;
+    //MainAccountingPanel accountingPanel;
+    CollectorsCiscoTabbedPanel ciscoPanel;
     
     /** Creates a new MainTabbedPanel. */
     public CollectorsTabbedPanel() {
@@ -57,16 +58,21 @@ public class CollectorsTabbedPanel extends JPanel {
         bandwidthPanel = new MainBandwidthPanel();
         responsePanel = new MainResponsePanel();
         hostPanel = new MainHostPanel();
-        nbarPanel = new MainNBARPanel();
-        netflowPanel = new MainNetFlowPanel();
+        //nbarPanel = new MainNBARPanel();
+        //netflowPanel = new MainNetFlowPanel();
         oidPanel = new MainOIDPanel();
+        //accountingPanel = new MainMACPrecAccountingPanel();
+        ciscoPanel = new CollectorsCiscoTabbedPanel();
                 
         pane.addTab("Bandwidth", null, bandwidthPanel, "Bandwidth SNMP collector");
         pane.addTab("Response", null, responsePanel, "Ping response collector");
         pane.addTab("Host", null, hostPanel, "Host resource collector");
-        pane.addTab("NBAR", null, nbarPanel, "NBAR Top-N collector");
-        pane.addTab("NetFlow", null, netflowPanel, "NetFlow Top-N collector");
+        //pane.addTab("NBAR", null, nbarPanel, "NBAR Top-N collector");
+        //pane.addTab("NetFlow", null, netflowPanel, "NetFlow Top-N collector");
         pane.addTab("OID", null, oidPanel, "Custom OID collector");
+        //pane.addTab("Accounting", null, accountingPanel, "IP accounting collector");
+        pane.addTab("Cisco", null, ciscoPanel, "Cisco collectors");
+                
         add(pane);
     }
     

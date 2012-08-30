@@ -291,11 +291,36 @@ CREATE TABLE `CustomOIDTemplateOIDs` (
   PRIMARY KEY (`templateID`,`position`)
 );
 
--- CREATE TABLE `CustomOIDTemplateDisplays` (
---   `templateID` int(11) NOT NULL,
---   `position` int(11) NOT NULL,
---  `oidID` int(11) NOT NULL,
---   `setDisplayID` int(11) NOT NULL,
---   PRIMARY KEY (`templateID`,`position`)
--- );
+CREATE TABLE `IPAccountingCheckpointCollectors` (
+  `sessionID` int(11) NOT NULL,
+  `device` varchar(255) NOT NULL default '',
+  `pollInterval` bigint(20) default NULL,
+  PRIMARY KEY (`sessionID`)
+);
 
+CREATE TABLE `MACAccountingCollectors` (
+  `sessionID` int(11) NOT NULL,
+  `device` varchar(255) NOT NULL default '',
+  `pollInterval` bigint(20) default NULL,
+  `ifDescr` varchar(255) default NULL,
+  `direction` int(11) default NULL,
+  PRIMARY KEY (`sessionID`)
+);
+
+CREATE TABLE `IPPrecAccountingCollectors` (
+  `sessionID` int(11) NOT NULL,
+  `device` varchar(255) NOT NULL default '',
+  `pollInterval` bigint(20) default NULL,
+  `ifDescr` varchar(255) default NULL,
+  `direction` int(11) default NULL,
+  PRIMARY KEY (`sessionID`)
+);
+
+CREATE TABLE `SNMPTableCollectors` (
+  `sessionID` int(11) NOT NULL,
+  `device` varchar(255) NOT NULL default '',
+  `pollInterval` bigint(20) default NULL,
+  `dataTypeID` int(11) NOT NULL default '0',
+  `snmpTypeID` int(11) NOT NULL default '0',
+  PRIMARY KEY (`sessionID`)
+);

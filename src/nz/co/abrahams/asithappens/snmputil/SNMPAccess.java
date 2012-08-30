@@ -32,6 +32,9 @@ import org.snmp4j.mp.MPv3;
 import org.snmp4j.security.SecurityLevel;
 import org.snmp4j.security.SecurityModels;
 import org.snmp4j.security.SecurityProtocols;
+import org.snmp4j.util.DefaultPDUFactory;
+import org.snmp4j.util.TableEvent;
+import org.snmp4j.util.TableUtils;
 
 /**
  * SNMP interface.
@@ -43,6 +46,16 @@ import org.snmp4j.security.SecurityProtocols;
  */
 public class SNMPAccess {
 
+    public static final long SIGNED_32BIT_MINIMUM = Integer.MIN_VALUE;
+    
+    public static final long SIGNED_32BIT_MAXIMUM = Integer.MAX_VALUE;
+    
+    public static final long UNSIGNED_32BIT_MAXIMUM = 4294967295L;
+    
+    public static final long SIGNED_64BIT_MINIMUM = Long.MIN_VALUE;
+    
+    public static final long SIGNED_64BIT_MAXIMUM = Long.MAX_VALUE;
+    
     public static final int VERSION = 0;
     public static final int SNMP_UDP_PORT = 161;
     public static final int DEFAULT_INITIAL_TIMEOUT = 2000;
@@ -163,9 +176,11 @@ public class SNMPAccess {
     /**
      * SNMP4J target
      */
-    protected USM usm;
-    //protected CommunityTarget target;
     protected Target target;
+    /**
+     * SNMP4J SNMPv3 user model
+     */
+    protected USM usm;
     /**
      * SNMP4J transport mapping
      */
@@ -619,5 +634,37 @@ public class SNMPAccess {
      */
     public String setMIBValueOctetString(String OIDString, String value) throws SNMPException {
         return ((OctetString) setMIBValue(OIDString, new OctetString(value))).toString();
+    }
+
+    /**
+     * Retrieves a table via SNMP.
+     *
+     * @return the SNMP table
+     */
+    public List<SNMPTableRow> getTable(String columns[]) throws SNMPException, UnknownHostException {
+        TableUtils tableUtils;
+        List<TableEvent> events;
+        Iterator<TableEvent> eventIterator;
+        List<SNMPTableRow> rows;
+
+        tableUtils = new TableUtils(snmp, new DefaultPDUFactory(PDU.GETBULK));
+        events = tableUtils.getTable(target, convertOIDs(columns), null, null);
+        eventIterator = events.iterator();
+        rows = new LinkedList<SNMPTableRow>();
+        
+        while ( eventIterator.hasNext() ) {
+            rows.add(new SNMPTableRow(eventIterator.next()));
+        }
+        return rows;
+    }
+
+    protected static OID[] convertOIDs(String[] strings) {
+        OID[] oids;
+        
+        oids = new OID[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            oids[i] = new OID(strings[i]);
+        }
+        return oids;
     }
 }
