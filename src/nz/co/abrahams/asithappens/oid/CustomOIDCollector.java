@@ -18,16 +18,14 @@
  */
 package nz.co.abrahams.asithappens.oid;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
+import java.util.Vector;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.snmputil.SNMPType;
 import nz.co.abrahams.asithappens.snmputil.SNMPTypeException;
-import java.util.Vector;
+import nz.co.abrahams.asithappens.storage.DataHeadings;
+import nz.co.abrahams.asithappens.storage.DataPoint;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,11 +33,14 @@ import org.apache.log4j.Logger;
  *
  * @author  mark
  */
-public class CustomOIDCollector extends DataCollector {
+public class CustomOIDCollector implements DataCollector {
 
     /** Logging provider */
     private static Logger logger = Logger.getLogger(CustomOIDCollector.class);
 
+    /** Collector definition */
+    CustomOIDCollectorDefinition definition;
+    
     /** SNMP interface */
     private CustomOIDSNMP snmp;
 
@@ -61,12 +62,12 @@ public class CustomOIDCollector extends DataCollector {
      * @param device       the name or IP address of the target device
      * @param pollInterval the polling interval in milliseconds
      */
-    public CustomOIDCollector(CustomOIDSNMP snmp, long pollInterval, String units, Vector<CustomOID> oids) throws SNMPException, SNMPTypeException {
-        super(snmp.getDevice(), pollInterval, DataType.OID);
-
+    public CustomOIDCollector(CustomOIDCollectorDefinition definition, CustomOIDSNMP snmp) throws SNMPException, SNMPTypeException {
+        //super(snmp.getDevice(), pollInterval, DataType.OID);
+        this.definition = definition;
         this.snmp = snmp;
-        this.units = units;
-        this.oids = oids;
+        //this.units = units;
+        oids = definition.getOIDs();
         lastCollectionTimes = new long[oids.size()];
         lastValues = new long[oids.size()];
         for (int i = 0; i < oids.size(); i++) {
@@ -149,6 +150,10 @@ public class CustomOIDCollector extends DataCollector {
         }
         return ((long) snmp.getCustomOIDInteger32(oid));
     }
+    
+    public CustomOIDCollectorDefinition getDefinition() {
+        return definition;
+    }    
     
     public String getValueUnits() {
         return units;

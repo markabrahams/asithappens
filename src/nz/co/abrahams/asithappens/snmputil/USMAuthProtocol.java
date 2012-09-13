@@ -17,13 +17,13 @@ public enum USMAuthProtocol {
         this.snmp4jID = snmp4jID;
     }
 
-    public static USMAuthProtocol getAuthProtocol(int desiredIndex) throws SNMPException {
+    public static USMAuthProtocol getAuthProtocol(int desiredIndex) {
         for ( USMAuthProtocol protocol : USMAuthProtocol.values() ) {
             if ( protocol.index == desiredIndex ) {
                 return protocol;
             }
         }
-        throw new SNMPException("User security authentication protocol " + desiredIndex + " not found");
+        throw new IllegalArgumentException("User security authentication protocol " + desiredIndex + " not found");
     }
 
     public int getIndex() {

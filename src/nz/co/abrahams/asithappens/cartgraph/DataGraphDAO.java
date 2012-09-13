@@ -38,6 +38,10 @@ import java.sql.SQLException;
 import java.net.UnknownHostException;
 import java.util.Vector;
 import java.awt.Rectangle;
+import nz.co.abrahams.asithappens.collectors.CollectorDefinition;
+import nz.co.abrahams.asithappens.collectors.CollectorDefinitionDAO;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.storage.DeviceDAO;
 import org.apache.log4j.Logger;
 
 /**
@@ -46,17 +50,8 @@ import org.apache.log4j.Logger;
  */
 public class DataGraphDAO {
     
-    /*
-    public static final String CREATE_GRAPH = "INSERT INTO Graphs (sessionID, x, y, width, height, " +
-            "xAxisScaling, aggregation, interpolation, " +
-            "setsPositioning, yAxisFormatUnits, bottomLeftLegend, " +
-            "autoGraphTop, fixedGraphTop, fixedGraphTopUnits, legendPanelWidth, xAxisAbsoluteTimes, " +
-            "horizontalGridLines, horizontalMinorLines, verticalGridLines, verticalMinorLines, " +
-            "linesInFront, stickyWindow, showLabels, showTrim) VALUES " +
-            "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    */
-    public static final String CREATE_GRAPH = "INSERT INTO Graphs (sessionID, graphOptionsID, x, y, width, height) " +
-            "VALUES (?,?,?,?,?,?)";
+    public static final String CREATE_GRAPH = "INSERT INTO Graphs (isTemplate, sessionID, collectorID, graphOptionsID, x, y, width, height) " +
+            "VALUES (?,?,?,?,?,?,?,?)";
     
     //public static final String CREATE_GRAPH_SETDISPLAY = "INSERT INTO GraphSetDisplays (graphID, setNumber, setDisplayID) VALUES (?,?,?)";
     public static final String CREATE_LAYOUT_GRAPH = "INSERT INTO LayoutGraphs (layoutName, graphID) VALUES (?,?)";
@@ -68,6 +63,8 @@ public class DataGraphDAO {
     
     public static final String RETRIEVE_SESSION_ID = "SELECT sessionID FROM Graphs WHERE graphID = ?";
     
+    public static final String RETRIEVE_COLLECTOR_ID = "SELECT collectorID FROM Graphs WHERE graphID = ?";
+    
     public static final String RETRIEVE_OPTIONS_ID = "SELECT graphOptionsID FROM Graphs WHERE graphID = ?";
     
     public static final String RETRIEVE_SETDISPLAYIDS = "SELECT setNumber, setDisplayID FROM GraphSetDisplays " +
@@ -76,14 +73,6 @@ public class DataGraphDAO {
     //public static final String RETRIEVE_SETDISPLAYID = "SELECT setDisplayID FROM GraphSetDisplays " +
     //        "WHERE graphID = ? AND setNumber = ?";
     
-    /*
-    public static final String RETRIEVE_GRAPH = "SELECT sessionID, x, y, width, height, " +
-            "xAxisScaling, aggregation, interpolation, " +
-            "setsPositioning, yAxisFormatUnits, bottomLeftLegend, " +
-            "autoGraphTop, fixedGraphTop, fixedGraphTopUnits, legendPanelWidth, xAxisAbsoluteTimes, " +
-            "horizontalGridLines, horizontalMinorLines, verticalGridLines, verticalMinorLines, " +
-            "linesInFront, stickyWindow, showLabels, showTrim FROM Graphs WHERE graphID = ?";
-    */
     public static final String RETRIEVE_GRAPH = "SELECT sessionID, graphOptionsID, x, y, width, height " +
             "FROM Graphs WHERE graphID = ?";
     
@@ -105,28 +94,44 @@ public class DataGraphDAO {
     
     public int createGraph(String layoutName, DataGraph graph) throws DBException, UnknownHostException, DAOCreationException {
         LayoutDAO layoutDAO;
+        DeviceDAO deviceDAO;
         DataSetsDAO dataSetsDAO;
+        CollectorDefinitionDAO definitionDAO;
         TimeSeriesOptionsDAO optionsDAO;
         PreparedStatement statement;
         ResultSet results;
         TimeSeriesContext context;
         int graphID;
         int sessionID;
+        int collectorID;
         int graphOptionsID;
+        boolean isTemplate;
         
         try {
             context = graph.getContext();
             if ( context.getData().isCollector() ) {
                 // Store graph context as part of a layout
                 if ( layoutName != null ) {
+                    isTemplate = true;
                     //sessionID = context.getData().storeTemplate();
-                    dataSetsDAO = DAOFactory.getDataSetsDAO();
-                    sessionID = dataSetsDAO.createTemplate(context.getData());
-                    dataSetsDAO.closeConnection();
+                    //dataSetsDAO = DAOFactory.getDataSetsDAO();
+                    //sessionID = dataSetsDAO.createTemplate(context.getData());
+                    //dataSetsDAO.closeConnection();
+                    
+                    deviceDAO = DAOFactory.getDeviceDAO(connection);
+                    deviceDAO.create(context.getData().getCollector().getDefinition().getDevice());
+
+                    definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, context.getData().getCollector().getDefinition());
+                    collectorID = definitionDAO.create(context.getData().getCollector().getDefinition());
+                    sessionID = 0;
+                    
                 // All stored collector sessions get their graph context stored
-                } else
+                } else {
+                    isTemplate = false;
                     sessionID = context.getData().getSessionID();
                     //collectorID = context.getData().getCollector().store();
+                    collectorID = 0;
+                }
             } else {
                 logger.info("Storing graphs of only collector sessions is supported");
                 return -1;
@@ -136,12 +141,14 @@ public class DataGraphDAO {
             graphOptionsID = optionsDAO.createGraphOptions(context.getOptions());
             
             statement = connection.prepareStatement(CREATE_GRAPH, Statement.RETURN_GENERATED_KEYS);
-            statement.setInt(1, sessionID);
-            statement.setInt(2, graphOptionsID);
-            statement.setInt(3, graph.getX());
-            statement.setInt(4, graph.getY());
-            statement.setInt(5, graph.getWidth());
-            statement.setInt(6, graph.getHeight());
+            statement.setInt(1, isTemplate ? 1 : 0);
+            statement.setInt(2, sessionID);
+            statement.setInt(3, collectorID);
+            statement.setInt(4, graphOptionsID);
+            statement.setInt(5, graph.getX());
+            statement.setInt(6, graph.getY());
+            statement.setInt(7, graph.getWidth());
+            statement.setInt(8, graph.getHeight());
             statement.executeUpdate();
             results = statement.getGeneratedKeys();
             results.next();
@@ -226,11 +233,15 @@ public class DataGraphDAO {
         PreparedStatement statement;
         ResultSet results;
         int sessionID;
+        int collectorID;
         int graphOptionsID;
         TimeSeriesContext context;
         TimeSeriesOptions options;
         Rectangle graphRectangle;
         DataGraph graph;
+        CollectorDefinitionDAO definitionDAO;
+        CollectorDefinition definition;
+        DataCollector collector;
         DataSetsDAO dataSetsDAO;
         TimeSeriesOptionsDAO optionsDAO;
         TimeSeriesContext.XAxisScaling xAxisScaling;
@@ -245,8 +256,15 @@ public class DataGraphDAO {
             statement.close();
             // If from layout, create the empty DataSets from a template
             if ( dataSets == null ) {
-                dataSetsDAO = DAOFactory.getDataSetsDAO(connection);
-                dataSets = dataSetsDAO.retrieveTemplate(sessionID);
+                //dataSetsDAO = DAOFactory.getDataSetsDAO(connection);
+                //dataSets = dataSetsDAO.retrieveTemplate(sessionID);
+                
+                collectorID = DBUtil.retrieveIntWithPK(connection, RETRIEVE_COLLECTOR_ID, graphID);
+                definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, collectorID);
+                definition = definitionDAO.retrieve(collectorID);
+                collector = definition.spawnCollector();
+                dataSets = new DataSets(collector);
+                
                 xAxisScaling = TimeSeriesContext.XAxisScaling.ConstantPixelWidth;
             // if from saved session we already have data loaded
             } else {

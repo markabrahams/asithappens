@@ -35,11 +35,7 @@ import org.apache.log4j.Logger;
  */
 public class IPAccountingCheckpointSNMP extends SNMPInterface {
 
-    //public static final String OID_ckactByts = "1.3.6.1.4.1.9.2.4.9.1.4";
-    /**
-     * Accounting table columns to retrieve - OID ckactByts -
-     * 1.3.6.1.4.1.9.2.4.9.1.4
-     */
+    /** Accounting table columns to retrieve - OID ckactByts */
     public static final String[] ACCOUNTING_TABLE = {"1.3.6.1.4.1.9.2.4.9.1.4"};
     public static final int ACCOUNTING_TABLE_INDEX_POSITION_SRC_ADDRESS = 0;
     public static final int ACCOUNTING_TABLE_INDEX_POSITION_DST_ADDRESS = 4;

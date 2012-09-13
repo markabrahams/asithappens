@@ -27,7 +27,7 @@ Add perpetual file polling and graphing for packet capture graphs
 
 
 BUG FIXES
-Application doesn't run under Windows 8 (reported by Paul Cainkar)
+Can't delete storing session after application crash
 Response collection doesn't work under Windows 7 (reported by Peter Williams)
 Graph panel not correctly callibrated with y-axis
 JVM crash in Self Defending Network when sound is enabled
@@ -39,7 +39,6 @@ Adding labels to multiple graphs for same session produces inconsistency with da
 NetFlow destination address mask setting doesn't do anything (looks like an IOS bug)
 No NBAR capability checking during NBAR collector initialization
 Resizing graphs of large packet captures causes application to freeze for a long time
-Clicking on the database tab after application has been open a long time produces an error (reported by Abigail Whyld)
 NullPointerException when opening two packet capture graphs concurrently
 
 
@@ -47,8 +46,6 @@ TIDYING
 Document all classes using javadoc
 Implement unit testing framework using JUnit
 Implement application logging across all classes using log4j
-Implement "GETBULK" method for more efficient SNMP table retrieval
-Introduce collector table into Database to model DataCollector object
 Investigate SNMPException types
 
 

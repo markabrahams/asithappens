@@ -222,6 +222,7 @@ public class TimeSeriesOptionsDAO {
             options.setAggregation(TimeSeriesContext.Aggregation.valueOf(results.getString("aggregation")));
             options.setInterpolation(TimeSeriesContext.Interpolation.valueOf(results.getString("interpolation")));
             options.setSetsPositioning(SetDisplay.Positioning.valueOf(results.getString("setsPositioning")));
+            options.setUseFixedGraphTop(results.getBoolean("useFixedGraphTop"));
             options.setFixedGraphTop(results.getDouble("fixedGraphTop"));
             // unimplemented, but add if needed:
             options.setYAxisFormattedUnits(results.getInt("yAxisFormatUnits") == 1);

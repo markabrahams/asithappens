@@ -19,15 +19,14 @@
 
 package nz.co.abrahams.asithappens.cartgraph;
 
-import nz.co.abrahams.asithappens.storage.SummaryData;
-import nz.co.abrahams.asithappens.storage.DataSets;
-import nz.co.abrahams.asithappens.core.Configuration;
-import nz.co.abrahams.asithappens.*;
-import nz.co.abrahams.asithappens.uiutil.SetDisplay;
-import java.awt.*;
+import java.awt.Color;
+import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.text.SimpleDateFormat;
+import nz.co.abrahams.asithappens.core.Configuration;
+import nz.co.abrahams.asithappens.storage.DataSets;
+import nz.co.abrahams.asithappens.storage.SummaryData;
+import nz.co.abrahams.asithappens.uiutil.SetDisplay;
 import org.apache.log4j.Logger;
 
 /**
@@ -61,36 +60,14 @@ public class TimeSeriesContext {
     /** X-axis scaling policies */
     public enum XAxisScaling { ConstantPixelWidth, AbsoluteBoundaries };
     
-    /** X-axis scaling strategy: display one point for each value */
-    //public static final int ONE_POINT_PER_VALUE = 0;
-    /** X-axis scaling strategy: Display the entire set of data */
-    //public static final int ABSOLUTE_BOUNDARIES = 1;
-    
     /** Interpolation policies */
     public enum Interpolation { None, Flat, Sloping };
     
     /** Interpolation policies */
     public static final String[] INTERPOLATION = { "None", "Flat", "Sloping" };
     
-    /** No interpolation */
-    //public static final int NO_INTERPOLATION = 0;
-    /** Flat interpolation */
-    //public static final int FLAT_INTERPOLATION = 1;
-    /** Sloping interpolation */
-    //public static final int SLOPING_INTERPOLATION = 2;
-    
     /** Aggregation policies */
     public enum Aggregation { Average, Maximum, Summed };
-    
-    /** Aggregation policies */
-    //public static final String[] AGGREGATION = { "Average", "Maximum", "Summed" };
-    
-    /** Aggregate by averaging */
-    //public static final int AVERAGE_AGGREGATION = 0;
-    /** Aggregate by selecting maximum */
-    //public static final int MAXIMUM_AGGREGATION = 1;
-    /** Aggregate by summing values */
-    //public static final int SUMMED_AGGREGATION = 2;
     
     public static final Character[] VALUE_UNITS = { new Character(' '), new Character('K'), new Character('M'), new Character('G') };
     
@@ -257,20 +234,13 @@ public class TimeSeriesContext {
         this.data = data;
         options = new TimeSeriesOptions();
         xAxisScaling = data.getDataType().xAxisScaling;
-        //aggregation = data.getDataType().aggregation;
         options.setAggregation(data.getDataType().aggregation);
-        //interpolation = data.getDataType().interpolation;
         options.setInterpolation(data.getDataType().interpolation);
-        //setsPositioning = data.getDataType().positioningDefault;
         options.setSetsPositioning(data.getDataType().positioningDefault);
-        //yAxisFormatUnits = data.getDataType().formatUnits;
         options.setYAxisFormattedUnits(data.getDataType().formatUnits);
-        //bottomLeftLegend = data.getDataType().bottomLeftLegend;
         options.setBottomLeftLegend(data.getDataType().bottomLeftLegend);
         
-        //setDisplays = new Vector();
         for ( int i = 0 ; i < data.getNumberOfSets() ; i++ ) {
-            //setDisplays.add(data.getDataType().setDisplayDefaults[i % data.getDataType().setDisplayDefaults.length]);
             options.addSetDisplay(data.getDataType().setDisplayDefaults[i % data.getDataType().setDisplayDefaults.length]);
         }
         
@@ -946,16 +916,6 @@ public class TimeSeriesContext {
     public void setShowTrim(boolean flag) {
         options.setShowTrim(flag);
     }
-    
-    /*
-    public boolean isStoring() {
-        return storing;
-    }
-     
-    public void setStoring(boolean flag) {
-        storing = flag;
-    }
-     */
     
     /** @return true if the legend is at the bottom-left of the graph, false if to the right */
     public boolean bottomLeftLegend() {

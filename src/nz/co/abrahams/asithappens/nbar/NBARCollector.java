@@ -19,67 +19,47 @@
 
 package nz.co.abrahams.asithappens.nbar;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
 import nz.co.abrahams.asithappens.storage.DataPoint;
-//import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
 import org.apache.log4j.Logger;
-import java.util.Vector;
-import java.net.UnknownHostException;
 
 /**
  * Collector for Cisco NBAR information from the NBAR protocol discovery MIB.
  *
  * @author mark
  */
-public class NBARCollector extends DataCollector {
-    
-    /** The direction representing inbound traffic */
-    private static final int IN_DIRECTION = 1;
-    /** The direction representing outbound traffic */
-    private static final int OUT_DIRECTION = 2;
+public class NBARCollector implements DataCollector {
     
     public static final int DEFAULT_TABLE_SIZE = 10;
     public static final int MAXIMUM_TABLE_INDEX = 50;
     
     private static Logger logger = Logger.getLogger(NBARCollector.class);
 
+    /** Collector definition */
+    NBARCollectorDefinition definition;
+    
     /** SNMP interface */
     private NBARSNMP snmp;
 
-    /** An index into the ifTable specifying which interface to collect for */
-    private int port;
-    /** A textual description of the interface */
-    private String portString;
-    /** Direction of traffic to examine */
-    private int direction;
-    /** Size of TopN table */
-    private int tableSize;
+    /** Number of set categories */
+    protected int setCount;
     /** TopN table index */
     protected int tableIndex;
     
     /** Creates a new NBARCollector. */
-    public NBARCollector(NBARSNMP snmp, long pollInterval, int port, String portString, int direction, int tableSize)
+    public NBARCollector(NBARCollectorDefinition definition, NBARSNMP snmp)
     throws SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.NBAR);
-
+        this.definition = definition;
         this.snmp = snmp;
-        this.port = port;
-        this.portString = portString;
-        this.direction = direction;
-        this.tableSize = tableSize;
         
-        tableIndex = snmp.setNBARTopNConfigTable(port, direction, tableSize, (int)pollInterval / 1000);
+        tableIndex = snmp.setNBARTopNConfigTable(definition.getTableSize(), (int)(definition.getPollInterval()) / 1000);
         logger.debug("Created NBAR collector: " + toString());
         snmp.setExpedientCollection();
     }
-    
-    //protected void initCollector() {
-    //}
     
     public DataCollectorResponse getNextValues(DataHeadings headings) {
         DataPoint[] points;
@@ -92,15 +72,13 @@ public class NBARCollector extends DataCollector {
         long currentTime;
         Vector<String> newSets;
         
-        //logger.debug("Getting next values");
-        mappings = new int[tableSize];
+        mappings = new int[definition.getTableSize()];
         newSets = new Vector();
-        //rates = new long[tableSize];
         currentTime = System.currentTimeMillis();
         try {
             snmp.setNBARTopNNewInterval(tableIndex);
-            protocols = snmp.getNBARTopNProtocols(tableIndex, tableSize);
-            rates = snmp.getNBARTopNRates(tableIndex, tableSize);
+            protocols = snmp.getNBARTopNProtocols(tableIndex, definition.getTableSize());
+            rates = snmp.getNBARTopNRates(tableIndex, definition.getTableSize());
             fetchedTableSize = Math.min(protocols.length, rates.length);
             
             // Create new data set columns where necessary
@@ -139,41 +117,18 @@ public class NBARCollector extends DataCollector {
             return new DataCollectorResponse(points, (String[])newSets.toArray(new String[newSets.size()]), setCount);
         } catch (Exception e) {
             logger.warn("Exception collecting values: " + e);
-            e.printStackTrace();
+            //e.printStackTrace();
             points = new DataPoint[setCount];
             for (int set = 0; set < setCount; set++ )
                 points[set] = new DataPoint(currentTime, 0);
-            //return new DataCollectorResponse(points, (String[])newSets.toArray(), setCount);
             return new DataCollectorResponse(points, (String[])newSets.toArray(new String[newSets.size()]), setCount);
         }
     }
-    
-    public String getIfDescr() {
-        return portString;
-    }
-    
-    public int getDirection() {
-        return direction;
-    }
-    
-    public int getTableSize() {
-        return tableSize;
-    }
-    
-    public String toString() {
-        StringBuffer buffer;
-        buffer = new StringBuffer();
-        buffer.append("Device=" + snmp.getDevice() + ", ");
-        buffer.append("IfIndex=" + port + ", ");
-        buffer.append("Port=" + portString + ", ");
-        buffer.append("Direction=" + direction + ", ");
-        buffer.append("TableIndex=" + tableIndex + ", ");
-        buffer.append("PollInterval=" + pollInterval + ", ");
-        buffer.append("TableSize=" + tableSize);
         
-        return buffer.toString();
-    }
-
+    public NBARCollectorDefinition getDefinition() {
+        return definition;
+    }    
+    
     public void releaseCollector() {
         logger.debug("Attempting to destroy Top-N table");
         try {

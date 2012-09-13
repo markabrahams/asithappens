@@ -28,6 +28,7 @@ import nz.co.abrahams.asithappens.snmputil.*;
 import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.storage.DeviceDAO;
 import nz.co.abrahams.asithappens.uiutil.DeviceSelectorModel;
+import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 
 /**
  *
@@ -37,17 +38,17 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
 
     private Device originalDevice;
     private String deviceName;
-    private boolean useWrite;
+    private SNMPAccessType snmpAccessType;
     private USMAuthProtocol[] authList;
     private USMPrivProtocol[] privList;
 
     /**
      * Creates new form EditDeviceDialog
      */
-    public SNMPAuthenticationDialog(java.awt.Frame parent, boolean modal, String deviceName, boolean useWrite) {
+    public SNMPAuthenticationDialog(java.awt.Frame parent, boolean modal, String deviceName, SNMPAccessType snmpAccessType) {
         super(parent, modal);
         this.deviceName = deviceName;
-        this.useWrite = useWrite;
+        this.snmpAccessType = snmpAccessType;
         initComponents();
         setTitle("SNMP authentication - " + accessDescription());
         nameLabel.setText("Device: " + deviceName + " (" + accessDescription() + ")");
@@ -76,17 +77,17 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         communityLabel = new javax.swing.JLabel();
         communityField = new javax.swing.JTextField();
         userLabel = new javax.swing.JLabel();
-        userField = new javax.swing.JTextField();
         userTypeLabel = new javax.swing.JLabel();
-        typeCombo = new JComboBox(nz.co.abrahams.asithappens.snmputil.USMLevel.values());
-        authLabel = new javax.swing.JLabel();
-        authField = new javax.swing.JTextField();
-        privLabel = new javax.swing.JLabel();
-        privField = new javax.swing.JTextField();
         authProtocolLabel = new javax.swing.JLabel();
-        authProtocolCombo = new JComboBox(nz.co.abrahams.asithappens.snmputil.USMAuthProtocol.values());
+        authLabel = new javax.swing.JLabel();
         privProtocolLabel = new javax.swing.JLabel();
+        privLabel = new javax.swing.JLabel();
+        userField = new javax.swing.JTextField();
+        typeCombo = new JComboBox(nz.co.abrahams.asithappens.snmputil.USMLevel.values());
+        authProtocolCombo = new JComboBox(nz.co.abrahams.asithappens.snmputil.USMAuthProtocol.values());
+        authField = new javax.swing.JTextField();
         privProtocolCombo = new JComboBox(nz.co.abrahams.asithappens.snmputil.USMPrivProtocol.values());
+        privField = new javax.swing.JTextField();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
@@ -121,14 +122,32 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
                 communityFieldActionPerformed(evt);
             }
         });
-        getContentPane().add(communityField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 80, 200, -1));
+        getContentPane().add(communityField, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 80, 200, -1));
 
         userLabel.setText("User");
         getContentPane().add(userLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 170, -1, -1));
-        getContentPane().add(userField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 170, 200, -1));
 
         userTypeLabel.setText("Type");
         getContentPane().add(userTypeLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 210, -1, -1));
+
+        authProtocolLabel.setText("Auth protocol");
+        getContentPane().add(authProtocolLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 250, -1, -1));
+
+        authLabel.setText("Auth key");
+        getContentPane().add(authLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 290, -1, -1));
+
+        privProtocolLabel.setText("Priv protocol");
+        getContentPane().add(privProtocolLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 330, -1, -1));
+
+        privLabel.setText("Priv key");
+        getContentPane().add(privLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 370, -1, -1));
+
+        userField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                userFieldActionPerformed(evt);
+            }
+        });
+        getContentPane().add(userField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 170, 200, -1));
 
         typeCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -137,23 +156,23 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         });
         getContentPane().add(typeCombo, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 210, 200, 20));
 
-        authLabel.setText("Auth key");
-        getContentPane().add(authLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 290, -1, -1));
-        getContentPane().add(authField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 290, 200, -1));
-
-        privLabel.setText("Priv key");
-        getContentPane().add(privLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 370, -1, -1));
-        getContentPane().add(privField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 370, 200, -1));
-
-        authProtocolLabel.setText("Auth protocol");
-        getContentPane().add(authProtocolLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 250, -1, -1));
-
         getContentPane().add(authProtocolCombo, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 250, 200, 20));
 
-        privProtocolLabel.setText("Priv protocol");
-        getContentPane().add(privProtocolLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 330, -1, -1));
+        authField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                authFieldActionPerformed(evt);
+            }
+        });
+        getContentPane().add(authField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 290, 200, -1));
 
         getContentPane().add(privProtocolCombo, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 330, 200, 20));
+
+        privField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                privFieldActionPerformed(evt);
+            }
+        });
+        getContentPane().add(privField, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 370, 200, -1));
 
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -178,8 +197,7 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        saveDevice();
-        dispose();
+        validateSaveDispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -187,7 +205,7 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void communityFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_communityFieldActionPerformed
-        // TODO add your handling code here:
+        validateSaveDispose();
     }//GEN-LAST:event_communityFieldActionPerformed
 
     private void version1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_version1ButtonActionPerformed
@@ -202,12 +220,20 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         selectUSMLevel();
     }//GEN-LAST:event_typeComboActionPerformed
 
+    private void userFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userFieldActionPerformed
+        validateSaveDispose();
+    }//GEN-LAST:event_userFieldActionPerformed
+
+    private void authFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_authFieldActionPerformed
+        validateSaveDispose();
+    }//GEN-LAST:event_authFieldActionPerformed
+
+    private void privFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privFieldActionPerformed
+        validateSaveDispose();
+    }//GEN-LAST:event_privFieldActionPerformed
+
     private String accessDescription() {
-        if (useWrite) {
-            return "read-write";
-        } else {
-            return "read-only";
-        }
+        return (snmpAccessType == SNMPAccessType.ReadOnly) ? "read-only" : "read-write";
     }
     
     private void initialiseCombos() {
@@ -230,6 +256,7 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         privProtocolCombo.setEnabled(false);
         privField.setEnabled(false);
         communityField.setEnabled(true);
+        communityField.requestFocusInWindow();
     }
 
     private void enableSNMPv3() {
@@ -248,6 +275,7 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         selectUSMLevel();
         authProtocolCombo.setSelectedIndex(authIndex);
         privProtocolCombo.setSelectedIndex(privIndex);
+        userField.requestFocusInWindow();
     }
 
     private void selectUSMLevel() {
@@ -301,21 +329,11 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
 
     private void loadDevice() {
         try {
-            DeviceDAO deviceDAO;
             USMUser user;
             String community;
             DeviceSelectorModel deviceSelectorModel;
 
-            /*
-             * deviceDAO = DAOFactory.getDeviceDAO(); if
-             * (deviceDAO.retrieveDeviceExists(deviceName) == false) {
-             * loadDefaults(); originalDevice = new Device(deviceName);
-             * deviceDAO.closeConnection(); return; } originalDevice =
-             * deviceDAO.retrieveDevice(deviceName, useWrite);
-             * deviceDAO.closeConnection();
-             */
-
-            deviceSelectorModel = new DeviceSelectorModel(deviceName, useWrite);
+            deviceSelectorModel = new DeviceSelectorModel(deviceName, snmpAccessType);
             if (!deviceSelectorModel.deviceExists()) {
                 originalDevice = new Device(deviceName);
                 version1Button.doClick();
@@ -323,18 +341,23 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
             } else {
                 originalDevice = deviceSelectorModel.loadDevice();
             }
-
-            if (originalDevice.getSNMPVersion() == SNMPVersion.v3) {
-                version3Button.doClick();
-            } else {
-                version1Button.doClick();
-            }
-            if (useWrite) {
-                community = originalDevice.getCommunityWrite();
-                user = originalDevice.getUsmUserWrite();
-            } else {
+            
+            if (snmpAccessType == SNMPAccessType.ReadOnly) {
+                if (originalDevice.getSNMPVersionRead() == SNMPVersion.v3) {
+                    version3Button.doClick();
+                } else {
+                    version1Button.doClick();
+                }
                 community = originalDevice.getCommunityRead();
                 user = originalDevice.getUsmUserRead();
+            } else {
+                if (originalDevice.getSNMPVersionWrite() == SNMPVersion.v3) {
+                    version3Button.doClick();
+                } else {
+                    version1Button.doClick();
+                }
+                community = originalDevice.getCommunityWrite();
+                user = originalDevice.getUsmUserWrite();
             }
             communityField.setText(community);
             if (user != null) {
@@ -350,11 +373,10 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
             Logger.getLogger(SNMPAuthenticationDialog.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnknownHostException ex) {
             Logger.getLogger(SNMPAuthenticationDialog.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SNMPException ex) {
-            Logger.getLogger(SNMPAuthenticationDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    /*
     private void loadDefaults() {
         communityField.setText("");
         userField.setText("");
@@ -364,20 +386,19 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
         privProtocolCombo.setSelectedIndex(0);
         privField.setText("");
     }
+    */
 
     private void saveDevice() {
         DeviceDAO deviceDAO;
-        int userID;
         SNMPVersion snmpVersion;
         String community;
         USMUser usmUser;
-        //boolean useWrite;
-        String address;
-        String ethernetAddress;
         Device updatedDevice;
 
         try {
-            //readUser = new USMUser();
+            if (areCredentialsValid() == false)
+                return;
+            
             deviceDAO = DAOFactory.getDeviceDAO();
             if (deviceDAO.retrieveDeviceExists(deviceName) == false) {
                 deviceDAO.create(new Device(deviceName));
@@ -391,14 +412,14 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
             usmUser = new USMUser(userField.getText(), USMLevel.getLevel(typeCombo.getSelectedIndex() + 1),
                     USMAuthProtocol.getAuthProtocol(authProtocolCombo.getSelectedIndex() + 2), authField.getText(),
                     USMPrivProtocol.getPrivProtocol(privProtocolCombo.getSelectedIndex() + 2), privField.getText());
-            if (useWrite) {
-                updatedDevice = new Device(deviceName, snmpVersion, originalDevice.getCommunityRead(), community,
-                        originalDevice.getUsmUserRead(), usmUser, true,
+            if (snmpAccessType == SNMPAccessType.ReadWrite) {
+                updatedDevice = new Device(deviceName, originalDevice.getSNMPVersionRead(), snmpVersion, originalDevice.getCommunityRead(), community,
+                        originalDevice.getUsmUserRead(), usmUser,
                         null, null);
                 //originalDevice.getAddress().toString(), originalDevice.getEthernetAddress().toString());
             } else {
-                updatedDevice = new Device(deviceName, snmpVersion, community, originalDevice.getCommunityWrite(),
-                        usmUser, originalDevice.getUsmUserWrite(), false,
+                updatedDevice = new Device(deviceName, snmpVersion, originalDevice.getSNMPVersionWrite(), community, originalDevice.getCommunityWrite(),
+                        usmUser, originalDevice.getUsmUserWrite(),
                         null, null);
                 //originalDevice.getAddress().toString(), originalDevice.getEthernetAddress().toString());                
             }
@@ -409,11 +430,46 @@ public class SNMPAuthenticationDialog extends javax.swing.JDialog {
             Logger.getLogger(SNMPAuthenticationDialog.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnknownHostException ex) {
             Logger.getLogger(SNMPAuthenticationDialog.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SNMPException ex) {
-            Logger.getLogger(SNMPAuthenticationDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
+    
+    private boolean areCredentialsValid() {
+        if (version1Button.isSelected()) {
+            if (communityField.getText().isEmpty()) {
+                ErrorHandler.modalError(this, "Please enter a community string", "Community string is empty");
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (userField.getText().isEmpty()) {
+                ErrorHandler.modalError(this, "Please enter a user name", "User name is empty");
+                return false;                
+            } else if ((typeCombo.getSelectedItem() == USMLevel.AuthNoPriv ||
+                    typeCombo.getSelectedItem() == USMLevel.AuthPriv) &&
+                    authField.getText().length() < USMUser.MINIMUM_KEY_LENGTH) {
+                ErrorHandler.modalError(this, "Please enter an authentication key of at least " + USMUser.MINIMUM_KEY_LENGTH + " characters",
+                        "Authentication key too short");
+                return false;                                
+            } else if (typeCombo.getSelectedItem() == USMLevel.AuthPriv &&
+                    privField.getText().length() < USMUser.MINIMUM_KEY_LENGTH) {
+                ErrorHandler.modalError(this, "Please enter a privacy key of at least " + USMUser.MINIMUM_KEY_LENGTH + " characters",
+                        "Privacy key too short");
+                return false;                                
+            } else {
+                return true;
+            }
+        }
+    }
+    
+    private void validateSaveDispose() {
+        if (areCredentialsValid() == false)
+            return;
+        saveDevice();
+        dispose();
+    }   
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField authField;
     private javax.swing.JLabel authLabel;

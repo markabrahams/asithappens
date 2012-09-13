@@ -19,24 +19,13 @@
  */
 package nz.co.abrahams.asithappens.storage;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.oid.CustomOIDCollector;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.collectors.DataCollectorDAO;
-import nz.co.abrahams.asithappens.collectors.DataCollectorDAOType;
-import nz.co.abrahams.asithappens.core.DAOFactory;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DAOCreationException;
-import nz.co.abrahams.asithappens.core.DBUtil;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import javax.sql.rowset.CachedRowSet;
-import java.sql.SQLException;
 import java.net.UnknownHostException;
+import java.sql.*;
 import java.util.Vector;
+import nz.co.abrahams.asithappens.collectors.*;
+import nz.co.abrahams.asithappens.core.*;
+import nz.co.abrahams.asithappens.oid.CustomOIDCollector;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import org.apache.log4j.Logger;
 
 /**
@@ -45,9 +34,8 @@ import org.apache.log4j.Logger;
  */
 public class DataSetsDAO {
 
-    public static final String CREATE_SESSION = "INSERT INTO Sessions (dataTypeID, device, pollInterval, port, startTime, finishTime, collecting, title, direction) VALUES (?,?,?,?,?,?,?,?,?)";
-    //public static final String CREATE_TEMPLATE = "INSERT INTO Sessions (dataTypeID, collector, userVisible, device, pollInterval, port, collecting, title, direction, storing) VALUES (?,?,?,?,?,?,?,?,?,?)";
-    public static final String CREATE_TEMPLATE = "INSERT INTO Sessions (dataTypeID, collectorDAOID, userVisible, device, pollInterval, port, collecting, title, direction, storing) VALUES (?,?,?,?,?,?,?,?,?,?)";
+    public static final String CREATE_SESSION = "INSERT INTO Sessions (dataTypeID, collectorID, startTime, finishTime, collecting, title) VALUES (?,?,?,?,?,?)";
+    public static final String CREATE_TEMPLATE = "INSERT INTO Sessions (dataTypeID, collectorID, collecting, title) VALUES (?,?,?,?)";
     public static final String DELETE_SESSION = "DELETE FROM Sessions WHERE sessionID = ?";
     public static final String DELETE_SESSION_LABELS = "DELETE FROM Labels WHERE sessionID = ?";
     public static final String DELETE_SESSION_HEADINGS = "DELETE FROM Headings WHERE sessionID = ?";
@@ -59,6 +47,7 @@ public class DataSetsDAO {
     public static final String UPDATE_SESSION_FINISHTIME = "UPDATE Sessions SET finishTime = ? WHERE sessionID = ?";
     public static final String UPDATE_SESSION_COLLECTING = "UPDATE Sessions SET collecting = ? WHERE sessionID = ?";
     public static final String RETRIEVE_SESSION_EXISTS = "SELECT sessionID FROM Sessions WHERE sessionID = ?";
+    public static final String RETRIEVE_SESSION_COLLECTORID = "SELECT collectorID FROM Sessions WHERE sessionID = ?";
     public static final String RETRIEVE_SESSION_DATATYPEID = "SELECT dataTypeID FROM Sessions WHERE sessionID = ?";
     public static final String RETRIEVE_SESSION_DEVICE = "SELECT device FROM Sessions WHERE sessionID = ?";
     public static final String RETRIEVE_SESSION_POLLINTERVAL = "SELECT pollInterval FROM Sessions WHERE sessionID = ?";
@@ -68,49 +57,59 @@ public class DataSetsDAO {
     public static final String RETRIEVE_SESSION_COLLECTING = "SELECT collecting FROM Sessions WHERE sessionID = ?";
     public static final String RETRIEVE_SESSION_TITLE = "SELECT title FROM Sessions WHERE sessionID = ?";
     public static final String RETRIEVE_SESSION_DIRECTION = "SELECT direction FROM Sessions WHERE sessionID = ?";
-    public static final String RETRIEVE_SESSION_IDS = "SELECT sessionID FROM Sessions WHERE userVisible = \'1\' ORDER BY startTime";
+    //public static final String RETRIEVE_SESSION_IDS = "SELECT sessionID FROM Sessions WHERE userVisible = \'1\' ORDER BY startTime";
+    public static final String RETRIEVE_SESSION_IDS = "SELECT sessionID FROM Sessions ORDER BY startTime";
     public static final String RETRIEVE_SESSION_POINT_COUNT = "SELECT COUNT(*) FROM Data WHERE sessionID = ? AND position = ? AND time >= ? AND time <= ?";
-    public static final String RETRIEVE_TEMPLATE = "SELECT dataTypeID, userVisible, device, pollInterval, port, collecting, title, direction, storing FROM Sessions WHERE sessionID = ?";
+    public static final String RETRIEVE_TEMPLATE = "SELECT dataTypeID, collectorID, collecting, title FROM Sessions WHERE sessionID = ?";
     public static final String RETRIEVE_PROCESSOR_TYPE = "SELECT collectorType FROM ProcessorCollectors WHERE sessionID = ?";
     public static final String RETRIEVE_MEMORY_TYPE = "SELECT collectorType FROM MemoryCollectors WHERE sessionID = ?";
-
-    /** Logging provider */
+    /**
+     * Logging provider
+     */
     public static Logger logger = Logger.getLogger(DataSetsDAO.class);
-
-    /** Database connection */
+    /**
+     * Database connection
+     */
     Connection connection;
 
-    /** Creates a new instance of DataSetsDAO */
+    /**
+     * Creates a new instance of DataSetsDAO
+     */
     public DataSetsDAO(Connection connection) {
         this.connection = connection;
     }
+    
+    public Connection getConnection() {
+        return connection;
+    }
 
     /**
-     * Adds a new session to the "sessions" table.  This is typically called
-     * to initialize a session with a view to storing subsequently collected
-     * data in the "data" table.  The method makes an assumption that data
-     * collection will start immediately after the session is created, and
-     * therefore sets the "collecting" field in the session table to true.
+     * Adds a new session to the "sessions" table. This is typically called to
+     * initialize a session with a view to storing subsequently collected data
+     * in the "data" table. The method makes an assumption that data collection
+     * will start immediately after the session is created, and therefore sets
+     * the "collecting" field in the session table to true.
      *
-     * @param dataSets      the DataSets object containing the session information
-     * @return              the unique key created for the new session
+     * @param dataSets the DataSets object containing the session information
+     * @return the unique key created for the new session
      */
     public int createSession(DataSets dataSets) throws DBException {
         PreparedStatement statement;
         ResultSet results;
         int sessionID;
+        CollectorDefinitionDAO definitionDAO;
+        int collectorID;
 
         try {
+            definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, dataSets.getCollector().getDefinition());
+            collectorID = definitionDAO.create(dataSets.getCollector().getDefinition());
             statement = connection.prepareStatement(CREATE_SESSION, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, dataSets.getDataType().id);
-            statement.setString(2, dataSets.getDevice().getName());
-            statement.setLong(3, dataSets.getPollInterval());
-            statement.setString(4, dataSets.getPortString());
-            statement.setLong(5, 0);
-            statement.setLong(6, 0);
-            statement.setInt(7, 1);
-            statement.setString(8, dataSets.getTitle());
-            statement.setLong(9, dataSets.getDirection());
+            statement.setInt(2, collectorID);
+            statement.setLong(3, 0);
+            statement.setLong(4, 0);
+            statement.setInt(5, 1);
+            statement.setString(6, dataSets.getTitle());
             statement.executeUpdate();
 
             results = statement.getGeneratedKeys();
@@ -123,47 +122,70 @@ public class DataSetsDAO {
         } catch (SQLException e) {
             logger.error("Failed to add new session to database");
             throw new DBException("Failed to add new session to database", e);
+        } catch (DAOCreationException e) {
+            logger.error("Failed to add new session to database");
+            throw new DBException("Failed to add new session to database", e);            
         }
     }
 
     /**
-     * Deletes a session from the "sessions" table.  This also deletes the
-     * following:
-     * <ul>
-     * <li> the data for that session from the "data" table
-     * <li> the headings for that session from the "headings" table
-     * <li> the labels for that session from the "labels" table
-     * </ul>
+     * Deletes a session from the "sessions" table. This also deletes the
+     * following: <ul> <li> the data for that session from the "data" table <li>
+     * the headings for that session from the "headings" table <li> the labels
+     * for that session from the "labels" table </ul>
      *
      * @param sessionID the unique key for the session to delete
      */
     public void deleteSession(int sessionID) throws DBException {
         PreparedStatement statement;
+        //ResultSet results;
+        int collectorID;
+        DataCollectorDAO definitionDAO;
 
         try {
             connection.setAutoCommit(false);
             statement = connection.prepareStatement(DELETE_SESSION_DATA);
             statement.setInt(1, sessionID);
             statement.executeUpdate();
+            statement.close();
             statement = connection.prepareStatement(DELETE_SESSION_LABELS);
             statement.setInt(1, sessionID);
             statement.executeUpdate();
+            statement.close();
             statement = connection.prepareStatement(DELETE_SESSION_HEADINGS);
             statement.setInt(1, sessionID);
             statement.executeUpdate();
+            statement.close();
+            
+            // Delete collector definition
+            //statement = connection.prepareStatement(RETRIEVE_SESSION_COLLECTORID);
+            //statement.setInt(1, sessionID);
+            //results = statement.executeQuery();
+            //collectorID = results.getInt(1);
+            //results.close();
+            //statement.close();
+            collectorID = DBUtil.retrieveIntWithPK(connection, RETRIEVE_SESSION_COLLECTORID, sessionID);
+            definitionDAO = (DataCollectorDAO) DAOFactory.getCollectorDefinitionDAO(connection, sessionID);
+            definitionDAO.delete(collectorID);
+            
+            // Delete session
             statement = connection.prepareStatement(DELETE_SESSION);
             statement.setInt(1, sessionID);
             statement.executeUpdate();
             connection.commit();
             connection.setAutoCommit(true);
             statement.close();
-            logger.debug("Adding new session with ID " + sessionID);
+            logger.debug("Deleting session with ID " + sessionID);
         } catch (SQLException e) {
+            logger.error("Failed to delete session with ID " + sessionID + " from database");
+            throw new DBException("Failed to delete session with ID " + sessionID + " from database", e);
+        } catch (DAOCreationException e) {
             logger.error("Failed to delete session with ID " + sessionID + " from database");
             throw new DBException("Failed to delete session with ID " + sessionID + " from database", e);
         }
     }
     //public void updateSessionAttribute(int sessionID, String columnName, String value)
+
     /**
      * Updates session information in the database.
      *
@@ -190,9 +212,9 @@ public class DataSetsDAO {
     /**
      * Sets an attribute of a session in the "sessions" table.
      *
-     * @param sessionID  the unique key for the session
+     * @param sessionID the unique key for the session
      * @param columnName the name of the attribute to set
-     * @param value      the new value for the attribute
+     * @param value the new value for the attribute
      */
     private void updateSessionAttribute(int sessionID, String columnName, String value) throws DBException {
         PreparedStatement statement;
@@ -217,7 +239,7 @@ public class DataSetsDAO {
      * Updates the title for a database session.
      *
      * @param sessionID the unique key for the session
-     * @param title     the new title for the session
+     * @param title the new title for the session
      */
     public void updateSessionTitle(int sessionID, String title) throws DBException {
         PreparedStatement statement;
@@ -242,7 +264,7 @@ public class DataSetsDAO {
      * Updates the start time for a database session.
      *
      * @param sessionID the unique key for the session
-     * @param title     the new start time for the session
+     * @param title the new start time for the session
      */
     public void updateSessionStartTime(int sessionID, long time) throws DBException {
         PreparedStatement statement;
@@ -267,7 +289,7 @@ public class DataSetsDAO {
      * Updates the finish time for a database session.
      *
      * @param sessionID the unique key for the session
-     * @param title     the new finish time for the session
+     * @param title the new finish time for the session
      */
     public void updateSessionFinishTime(int sessionID, long time) throws DBException {
         PreparedStatement statement;
@@ -292,7 +314,7 @@ public class DataSetsDAO {
      * Updates the finish time for a database session.
      *
      * @param sessionID the unique key for the session
-     * @param title     the new finish time for the session
+     * @param title the new finish time for the session
      */
     public void updateSessionCollectingState(int sessionID, boolean state) throws DBException {
         PreparedStatement statement;
@@ -339,7 +361,7 @@ public class DataSetsDAO {
      * Gets the data type ID for a session.
      *
      * @param sessionID the unique key for the session
-     * @return          the data type ID corresponding to the session's type
+     * @return the data type ID corresponding to the session's type
      */
     public int retrieveSessionDataTypeID(int sessionID) throws DBException {
         return ((Integer) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_DATATYPEID, sessionID))).intValue();
@@ -349,8 +371,7 @@ public class DataSetsDAO {
      * Gets the device target for a session.
      *
      * @param sessionID the unique key for the session
-     * @return          the device as stored in the "sessions" table (name or
-     *                  IP address)
+     * @return the device as stored in the "sessions" table (name or IP address)
      */
     public String retrieveSessionDevice(int sessionID) throws DBException {
         return ((String) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_DEVICE, sessionID)));
@@ -360,41 +381,40 @@ public class DataSetsDAO {
      * Gets the polling interval for a session.
      *
      * @param sessionID the unique key for the session
-     * @return          the polling interval in milliseconds
+     * @return the polling interval in milliseconds
      */
     public long retrieveSessionPollInterval(int sessionID) throws DBException {
         return ((Long) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_POLLINTERVAL, sessionID))).longValue();
     }
 
     /**
-     * Gets the device port for a session.  This will be null if a port is not
+     * Gets the device port for a session. This will be null if a port is not
      * relevant to the data type being collected e.g. the "Response" data type.
      *
      * @param sessionID the unique key for the session
-     * @return          the name of the port on the device
+     * @return the name of the port on the device
      */
     public String retrieveSessionPort(int sessionID) throws DBException {
         return ((String) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_PORT, sessionID)));
     }
 
     /**
-     * Gets the starting date for a session.  The date is expressed as a "long"
+     * Gets the starting date for a session. The date is expressed as a "long"
      * representing the number of milliseconds since midnight, Jan 1, 1970.
      *
      * @param sessionID the unique key for the session
-     * @return          the date that the data collection for the session began
+     * @return the date that the data collection for the session began
      */
     public long retrieveSessionStartTime(int sessionID) throws DBException {
         return ((Long) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_STARTTIME, sessionID))).longValue();
     }
 
     /**
-     * Gets the finishing date for a session.  The date is expressed as a "long"
+     * Gets the finishing date for a session. The date is expressed as a "long"
      * representing the number of milliseconds since midnight, Jan 1, 1970.
      *
      * @param sessionID the unique key for the session
-     * @return          the date that the data collection for the session
-     *                  finished
+     * @return the date that the data collection for the session finished
      */
     public long retrieveSessionFinishTime(int sessionID) throws DBException {
         return ((Long) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_FINISHTIME, sessionID))).longValue();
@@ -404,8 +424,8 @@ public class DataSetsDAO {
      * Gets the collecting state for a session.
      *
      * @param sessionID the unique key for the session
-     * @return          true if data is currently being collected for the
-     *                  session, otherwise false
+     * @return true if data is currently being collected for the session,
+     * otherwise false
      */
     public boolean retrieveSessionCollectingState(int sessionID) throws DBException {
         return ((Byte) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_COLLECTING, sessionID))) == 1;
@@ -415,20 +435,53 @@ public class DataSetsDAO {
      * Gets the user-supplied title for a session.
      *
      * @param sessionID the unique key for the session
-     * @return          the name of the title of the session
+     * @return the name of the title of the session
      */
     public String retrieveSessionTitle(int sessionID) throws DBException {
         return ((String) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_TITLE, sessionID)));
     }
 
     /**
-     * Gets the direction of information flow for collection for a session.
+     * Gets the collector DAO ID for a session.
      *
      * @param sessionID the unique key for the session
-     * @return          the direction of information flow for collection
+     * @return the DAO ID for collection
      */
-    public int retrieveSessionDirection(int sessionID) throws DBException {
-        return ((Integer) (DBUtil.retrieveSingleAttributeWithPK(connection, RETRIEVE_SESSION_DIRECTION, sessionID))).intValue();
+    /*
+    public int retrieveSessionCollectorDAOID(int sessionID) throws DBException {
+        return DBUtil.retrieveIntWithPK(connection, RETRIEVE_SESSION_COLLECTOR_DAOID, sessionID);
+    }
+    */
+    
+    /**
+     * Gets the collector ID for a session.
+     *
+     * @param sessionID the unique key for the session
+     * @return the collector ID for collection
+     */
+    public int retrieveSessionCollectorID(int sessionID) throws DBException {
+        return DBUtil.retrieveIntWithPK(connection, RETRIEVE_SESSION_COLLECTORID, sessionID);
+    }
+
+    public DataAttributesCollector retrieveSessionAttributes(int sessionID) throws DBException {
+        CollectorDefinitionDAO definitionDAO;
+        //DataType dataType;
+        int collectorID;
+        CollectorDefinition definition;
+        String title;
+
+        try {
+            //dataType = DataType.types[retrieveSessionDataTypeID(sessionID)];
+            collectorID = retrieveSessionCollectorID(sessionID);
+            title = retrieveSessionTitle(sessionID);
+            definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, collectorID);
+            definition = definitionDAO.retrieve(collectorID);
+            return new DataAttributesCollector(definition, title);
+        }
+        catch (Exception e) {
+            logger.error("Error creating session attributes for sessionID " + sessionID);
+            throw new DBException("Error creating session attributes for sessionID " + sessionID, e);
+        }
     }
 
     /**
@@ -464,12 +517,12 @@ public class DataSetsDAO {
     }
 
     /**
-     * Returns the number of data points stored for the given set of a session between
-     * the given times.
+     * Returns the number of data points stored for the given set of a session
+     * between the given times.
      *
-     * @param sessionID  the unique key for the session
-     * @param set        the set from which to count data point values
-     * @param startTime  the lower bound for the count
+     * @param sessionID the unique key for the session
+     * @param set the set from which to count data point values
+     * @param startTime the lower bound for the count
      * @param finishTime the upper bound for the count
      */
     public int retrieveNumberOfPoints(int sessionID, int set, long startTime, long finishTime) throws DBException {
@@ -503,27 +556,28 @@ public class DataSetsDAO {
     public int createTemplate(DataSets dataSets) throws DBException, UnknownHostException, DAOCreationException {
         DeviceDAO deviceDAO;
         DataCollectorDAO collectorDAO;
+        CollectorDefinitionDAO definitionDAO;
         PreparedStatement statement;
         ResultSet results;
         int sessionID;
+        int collectorID;
 
         try {
-            deviceDAO = DAOFactory.getDeviceDAO();
-            deviceDAO.create(dataSets.getDevice());
-            deviceDAO.closeConnection();
+            deviceDAO = DAOFactory.getDeviceDAO(connection);
+            deviceDAO.create(dataSets.getCollector().getDefinition().getDevice());
+            //deviceDAO.closeConnection();
+
+            definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, dataSets.getCollector().getDefinition());
+            collectorID = definitionDAO.create(dataSets.getCollector().getDefinition());
 
             statement = connection.prepareStatement(CREATE_TEMPLATE, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, dataSets.getDataType().id);
-            //statement.setString(2, dataSets.getCollectorName());
-            statement.setInt(2, DataCollectorDAOType.getDAOID(dataSets.getCollector().getClass()));
+            //statement.setInt(2, CollectorDefinitionDAOType.getDAOID(dataSets.getCollector().getDefinition().getClass()));
+            statement.setInt(2, collectorID);
+            //statement.setInt(3, 0);
             statement.setInt(3, 0);
-            statement.setString(4, dataSets.getDevice().getName());
-            statement.setLong(5, dataSets.getPollInterval());
-            statement.setString(6, dataSets.getPortString());
-            statement.setLong(7, 0);
-            statement.setString(8, dataSets.getTitle());
-            statement.setLong(9, dataSets.getDirection());
-            statement.setInt(10, dataSets.isStoring() ? 1 : 0);
+            statement.setString(4, dataSets.getTitle());
+            //statement.setInt(7, dataSets.isStoring() ? 1 : 0);
             statement.executeUpdate();
 
             results = statement.getGeneratedKeys();
@@ -531,12 +585,6 @@ public class DataSetsDAO {
             sessionID = results.getInt(1);
             results.close();
             statement.close();
-
-            // TODO - store collector here
-            collectorDAO = DAOFactory.getDataCollectorDAO(connection, dataSets.getCollector());
-            collectorDAO.create(sessionID, dataSets.getCollector());
-            collectorDAO.closeConnection();
-            //dataSets.getCollector().store(sessionID);
 
             logger.debug("Adding new session with ID " + sessionID);
             return sessionID;
@@ -549,8 +597,10 @@ public class DataSetsDAO {
     public DataSets retrieveTemplate(int sessionID) throws DBException, UnknownHostException, SNMPException, DAOCreationException {
         PreparedStatement statement;
         ResultSet results;
-        DataCollectorDAO collectorDAO;
+        int collectorID;
+        CollectorDefinitionDAO definitionDAO;
         DataCollector collector;
+        CollectorDefinition definition;
         DataSets data;
         //Device device;
         //int dataTypeID;
@@ -558,35 +608,45 @@ public class DataSetsDAO {
         //String portString;
         //String collectorType;
 
-        try {
-            collectorDAO = DAOFactory.getDataCollectorDAO(connection, sessionID);
-            collector = collectorDAO.retrieve(sessionID);
+            collectorID = DBUtil.retrieveIntWithPK(connection, RETRIEVE_SESSION_COLLECTORID, sessionID);
+            definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, sessionID);
+            definition = definitionDAO.retrieve(collectorID);
 
-            statement = connection.prepareStatement(RETRIEVE_TEMPLATE);
-            statement.setInt(1, sessionID);
-            results = statement.executeQuery();
-            results.next();
+            //statement = connection.prepareStatement(RETRIEVE_TEMPLATE);
+            //statement.setInt(1, sessionID);
+            //results = statement.executeQuery();
+            //results.next();
 
-            data = new DataSets(collector.getDataType(), collector, collector.getDevice(), results.getInt("pollInterval"),
-                    results.getString("port"), results.getInt("direction"), results.getString("title"), results.getBoolean("storing"));
-            results.close();
-            statement.close();
-            
+            /*
+             * data = new DataSets(collector.getDataType(), collector,
+             * collector.getDevice(), results.getInt("pollInterval"),
+             * results.getString("port"), results.getInt("direction"),
+             * results.getString("title"), results.getBoolean("storing"));
+             */
+            collector = definition.spawnCollector();
+            //data = new DataSets(collector, results.getString("title"), results.getBoolean("storing"));
+            data = new DataSets(collector);
+            //results.close();
+            //statement.close();
+
             // Nasty - fix it up please
-            if ( collector.getDataType() == DataType.OID ) {
+            /*
+            if (collector.getDefinition().getDataType() == DataType.OID) {
                 CustomOIDCollector oidCollector;
-                oidCollector = (CustomOIDCollector)collector;
-                for (int i = 0; i < oidCollector.getOIDs().size() ; i++) {
+                oidCollector = (CustomOIDCollector) collector;
+                for (int i = 0; i < oidCollector.getOIDs().size(); i++) {
                     data.addSet(oidCollector.getOIDs().elementAt(i).label);
                 }
-                data.setValueUnits(oidCollector.getValueUnits());    
+                data.setValueUnits(oidCollector.getValueUnits());
             }
-            
+            */
             return data;
+        /*
         } catch (SQLException e) {
             logger.error("Problem loading session template with ID: " + sessionID);
             throw new DBException("Problem loading session template with ID: " + sessionID);
         }
+        */
     }
 
     /**

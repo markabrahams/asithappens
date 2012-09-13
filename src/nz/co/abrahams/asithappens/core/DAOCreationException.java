@@ -25,7 +25,7 @@ package nz.co.abrahams.asithappens.core;
  *
  * @author mark
  */
-public class DAOCreationException extends Exception {
+public class DAOCreationException extends RuntimeException {
     
     /**
      * Creates a DatabaseException instance.

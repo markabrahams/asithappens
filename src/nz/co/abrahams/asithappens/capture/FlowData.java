@@ -44,7 +44,6 @@ public class FlowData extends DataSets {
     
     Logger logger;
     String fileName;
-    int direction;
     Flow[] flows;
     FlowOptions options;
     
@@ -58,6 +57,7 @@ public class FlowData extends DataSets {
      * @param finishTime  the time that the last packet was observed
      * @param options     mask options
      */
+    /*
     public FlowData(String fileName, String title, int direction, long startTime, long finishTime, FlowOptions options) throws FileNotFoundException, IOException, EOPacketStream, StreamFormatException, SyntaxError,
             ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
         super(startTime, finishTime, fileName);
@@ -81,6 +81,7 @@ public class FlowData extends DataSets {
         }
         //logger.debug(flowDescriptions());
     }
+    */
     
     public FlowData(String fileName, long startTime, long finishTime, FlowOptions options) {
         super(startTime, finishTime, fileName);
@@ -88,10 +89,10 @@ public class FlowData extends DataSets {
         
         flows = new Flow[0];
         this.fileName = fileName;
-        this.direction = direction;
         this.startTime = startTime;
         this.finishTime = finishTime;
-        this.options = options;        
+        this.options = options;
+        attributes = new CaptureAttributes(fileName);
     }
     
     /**
@@ -117,7 +118,7 @@ public class FlowData extends DataSets {
                     if ( flow.matches(flows[set], options) ) {
                         foundMatch = true;
                         data.elementAt(set).add(new DataPoint(flow.timestamp, flow.length * 8));
-                        logger.debug("Adding data to flow" + set + ": " + flow.timestamp + " " + flow.length);
+                        //logger.debug("Adding data to flow" + set + ": " + flow.timestamp + " " + flow.length);
                     }
                 }
                 
@@ -141,25 +142,7 @@ public class FlowData extends DataSets {
              */
         }
         
-    }
-    
-    /**
-     * Returns a list of the first n flow descriptions.
-     *
-     * @param numberFlows  the number of flows desired
-     * @return             the list of descriptions
-     */
-    /*
-    public String[] getDescriptions(int numberFlows) {
-        String[] descriptions = new String[numberFlows];
-        
-        for (int i = 0; i < numberFlows; i++) {
-            descriptions[i] = flows[i].printable();
-        }
-        
-        return descriptions;
-    }
-    */
+    }    
     
     /**
      * Dump the data structures for debugging purposes.

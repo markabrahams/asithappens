@@ -30,13 +30,13 @@ public enum SNMPVersion {
         this.index = index;
     }
 
-    public static SNMPVersion getSNMPVersion(int desiredIndex) throws SNMPException {
+    public static SNMPVersion getSNMPVersion(int desiredIndex) {
         for ( SNMPVersion version : SNMPVersion.values() ) {
             if ( version.index == desiredIndex ) {
                 return version;
             }
         }
-        throw new SNMPException("SNMP version " + desiredIndex + " not found");
+        throw new IllegalArgumentException("SNMP version " + desiredIndex + " not found");
     }
 
     public int getIndex() {

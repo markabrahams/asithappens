@@ -20,7 +20,7 @@
 package nz.co.abrahams.asithappens.mainui;
 
 /**
- * The graphical pane for creating bandwidth graphs.
+ * The panel showing application information.
  *
  * @author  mark
  */
@@ -47,7 +47,7 @@ public class MainAboutPanel extends javax.swing.JPanel {
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         titleLabel.setFont(new java.awt.Font("Dialog", 1, 24)); // NOI18N
-        titleLabel.setText("AsItHappens 0.59");
+        titleLabel.setText("AsItHappens 0.60");
         add(titleLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 30, -1, -1));
 
         descriptionLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N

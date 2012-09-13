@@ -1,3 +1,25 @@
+0.60 release
+============
+
+Bug fixes:
+Fixed graph top fixing option didn't apply to graph on layout load
+Fixed UCD memory collector incorrectly showed zero
+Fixed collector crash when storing but no data sets were initialised
+Fixed SNMP authentication dialog focus assignment
+Fixed ClassNotFoundException startup failure on Windows 8 (reported by Paul Cainkar)
+Fixed NullPointerException crash when adding SNMPv3 user with no user name
+Fixed IllegalArgumentException error when SNMPv3 user keys were less than 8 characters
+Fixed primary key violation SQL exception when saving a layout over an existing one
+Fixed SNMP version overwriting between read-only and read-write credentials
+
+Added features:
+Added close all graphs on exit option
+
+Code changes:
+Added collector definition classes
+
+Classes added: GraphFactory
+
 0.59 release
 ============
 

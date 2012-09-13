@@ -18,27 +18,13 @@
  */
 package nz.co.abrahams.asithappens.accounting;
 
-import nz.co.abrahams.asithappens.bandwidth.*;
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataSets;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
 import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
-import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
-import nz.co.abrahams.asithappens.uiutil.PortsSelectorPanel;
-import nz.co.abrahams.asithappens.cartgraph.DataGraph;
-import java.net.*;
-import javax.swing.*;
-import nz.co.abrahams.asithappens.collectors.SNMPTableCollector;
-import nz.co.abrahams.asithappens.collectors.SNMPTableInterface;
-import nz.co.abrahams.asithappens.snmputil.SNMPType;
-import nz.co.abrahams.asithappens.storage.Direction;
 import nz.co.abrahams.asithappens.uiutil.DeviceSelectorPanel;
-import org.apache.log4j.Logger;
+import nz.co.abrahams.asithappens.uiutil.GraphFactory;
 
 /**
- * The graphical pane for creating Cisco accounting graphs.
+ * The graphical pane for creating Cisco IP accounting graphs.
  *
  * @author mark
  */
@@ -123,60 +109,56 @@ public class MainIPAccountingPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initComponentsFinish() {
-        deviceSelectorPanel = new DeviceSelectorPanel(true);
+        deviceSelectorPanel = new DeviceSelectorPanel(SNMPAccessType.ReadWrite);
         add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 410, -1));
-        
+
     }
 
     /**
      * Creates a new IP Accounting graph.
      */
     private void accountingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accountingButtonActionPerformed
-        Device device;
-        IPAccountingCheckpointSNMP checkpointSNMP;
-        IPAccountingActiveSNMP activeSNMP;
-        IPAccountingCheckpointCollector checkpointCollector;
-        SNMPTableCollector activeCollector;
-        DataSets data;
-        TimeSeriesContext context;
-        DataGraph graphFrame;
-
-        try {
-            if (activeButton.isSelected()) {
-                deviceSelectorPanel.setUseWriteAuth(false);
-                device = deviceSelectorPanel.getModel().loadDevice();
-                activeSNMP = new IPAccountingActiveSNMP(device);
-                activeCollector = new SNMPTableCollector(DataType.ACCOUNTING, SNMPType.Integer32,
-                        activeSNMP, Integer.parseInt(pollField.getText()));
-                data = new DataSets(DataType.ACCOUNTING, activeCollector, device, Integer.parseInt(pollField.getText()), "", DataSets.DIRECTION_BOTH, null, storeDataCheckBox.isSelected());
-            } else {
-                deviceSelectorPanel.setUseWriteAuth(true);
-                device = deviceSelectorPanel.getModel().loadDevice();
-                checkpointSNMP = new IPAccountingCheckpointSNMP(device);
-                checkpointCollector = new IPAccountingCheckpointCollector(checkpointSNMP, Integer.parseInt(pollField.getText()));
-                data = new DataSets(DataType.ACCOUNTING, checkpointCollector, device, Integer.parseInt(pollField.getText()), "", DataSets.DIRECTION_BOTH, null, storeDataCheckBox.isSelected());
-            }
-            context = new TimeSeriesContext(data);
-            graphFrame = new DataGraph(context);
-        } catch (DBException e) {
-            ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                    "Error opening database connection", e);
-        } catch (UnknownHostException e) {
-            ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceSelectorPanel.getModel().getName() + "\" is valid",
-                    "Unknown host " + deviceSelectorPanel.getModel().getName());
-        } catch (SNMPException e) {
-            ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                    "Cannot access SNMP service on device " + deviceSelectorPanel.getModel().getName(), e);
+        if (activeButton.isSelected()) {
+            createActiveAccountingGraph();
+        } else {
+            createCheckpointAccountingGraph();
         }
-
     }//GEN-LAST:event_accountingButtonActionPerformed
 
+    private void createActiveAccountingGraph() {
+        Device device;
+        IPAccountingActiveCollectorDefinition activeDefinition;        
+        
+        deviceSelectorPanel.setUseWriteAuth(SNMPAccessType.ReadOnly);
+        device = deviceSelectorPanel.loadDevice();
+        if (device == null)
+            return;
+        
+        activeDefinition = new IPAccountingActiveCollectorDefinition(null, device,
+                Integer.parseInt(pollField.getText()), storeDataCheckBox.isSelected());
+        GraphFactory.create(activeDefinition);
+    }
+    
+    private void createCheckpointAccountingGraph() {
+        Device device;
+        IPAccountingCheckpointCollectorDefinition checkpointDefinition;        
+        
+        deviceSelectorPanel.setUseWriteAuth(SNMPAccessType.ReadWrite);
+        device = deviceSelectorPanel.loadDevice();
+        if (device == null)
+            return;
+        
+        checkpointDefinition = new IPAccountingCheckpointCollectorDefinition(null, device,
+                    Integer.parseInt(pollField.getText()), storeDataCheckBox.isSelected());
+        GraphFactory.create(checkpointDefinition);
+    }
+    
     private void activeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activeButtonActionPerformed
-        deviceSelectorPanel.setUseWriteAuth(false);
+        deviceSelectorPanel.setUseWriteAuth(SNMPAccessType.ReadOnly);
     }//GEN-LAST:event_activeButtonActionPerformed
 
     private void checkpointButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkpointButtonActionPerformed
-        deviceSelectorPanel.setUseWriteAuth(true);
+        deviceSelectorPanel.setUseWriteAuth(SNMPAccessType.ReadWrite);
     }//GEN-LAST:event_checkpointButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

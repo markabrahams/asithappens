@@ -21,13 +21,13 @@ public enum USMPrivProtocol {
         this.snmp4jID = snmp4jID;
     }
 
-    public static USMPrivProtocol getPrivProtocol(int desiredIndex) throws SNMPException {
+    public static USMPrivProtocol getPrivProtocol(int desiredIndex) {
         for ( USMPrivProtocol protocol : USMPrivProtocol.values() ) {
             if ( protocol.index == desiredIndex ) {
                 return protocol;
             }
         }
-        throw new SNMPException("User security privacy protocol " + desiredIndex + " not found");
+        throw new IllegalArgumentException("User security privacy protocol " + desiredIndex + " not found");
     }
 
     public int getIndex() {

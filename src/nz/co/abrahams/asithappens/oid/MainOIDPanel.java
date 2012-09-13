@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import nz.co.abrahams.asithappens.cartgraph.DataGraph;
 import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
 import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.core.DataType;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.snmputil.SNMPType;
 import nz.co.abrahams.asithappens.snmputil.SNMPTypeException;
@@ -138,7 +138,7 @@ public class MainOIDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initComponentsFinish() {
-        deviceSelectorPanel = new DeviceSelectorPanel(false);
+        deviceSelectorPanel = new DeviceSelectorPanel(SNMPAccessType.ReadOnly);
         add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 550, -1));
     }
 
@@ -185,6 +185,7 @@ public class MainOIDPanel extends javax.swing.JPanel {
         String portString;
         Vector<CustomOID> oids;
         CustomOIDSNMP snmp;
+        CustomOIDCollectorDefinition definition;
         CustomOIDCollector collector;
         DataSets data;
         TimeSeriesContext context;
@@ -205,11 +206,16 @@ public class MainOIDPanel extends javax.swing.JPanel {
             //device = new Device(deviceName, communityField.getText(), null, false);
             device = deviceSelector.loadDevice();
             snmp = new CustomOIDSNMP(device);
-            collector = new CustomOIDCollector(snmp, Integer.parseInt(pollField.getText()), unitsField.getText(), ((CustomOIDTableModel) oidTable.getModel()).getCustomOIDVector());
-            data = new DataSets(DataType.OID, collector, device, Integer.parseInt(pollField.getText()), null, 0, null, storeDataCheckBox.isSelected());
+            definition = new CustomOIDCollectorDefinition(null, device,
+                    Integer.parseInt(pollField.getText()), storeDataCheckBox.isSelected(),
+                    oids, unitsField.getText());
+            collector = new CustomOIDCollector(definition, snmp);
+            data = new DataSets(collector);
+            /*
             for (int i = 0; i < oids.size(); i++) {
                 data.addSet(oids.elementAt(i).label);
             }
+            */
             context = new TimeSeriesContext(data);
             graphFrame = new DataGraph(context);
         } catch (DBException e) {
@@ -231,16 +237,7 @@ public class MainOIDPanel extends javax.swing.JPanel {
 private void pollFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pollFieldActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_pollFieldActionPerformed
-    /*
-     * protected void displayTemplates() { DatabaseAccess dba;
-     *
-     * try { dba = new DatabaseAccess(); templatesList = new
-     * JList(dba.loadCustomOIDTemplates());
-     * templatesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-     * templatesPane.setViewportView((Component)templatesList); } catch (
-     * DatabaseException e ) { ErrorHandler.modalError(null, "Please ensure that
-     * database is running and accessible", "Error accessing database", e); } }
-     */
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JScrollPane editPane;

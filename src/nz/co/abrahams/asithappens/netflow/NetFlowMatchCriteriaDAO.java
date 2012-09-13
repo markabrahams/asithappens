@@ -39,7 +39,7 @@ public class NetFlowMatchCriteriaDAO {
     
     /** NetFlowMatchCriteria creation SQL statement */
     public static final String CREATE = "INSERT INTO NetFlowMatchCriteria " +
-            "(sessionID, srcAddressType, srcAddressMask, dstAddressType, dstAddressMask, " +
+            "(collectorID, srcAddressType, srcAddressMask, dstAddressType, dstAddressMask, " +
             "srcPortLo, srcPortHi, dstPortLo, dstPortHi, srcAS, dstAS, protocol, tosByte, " +
             "nhAddressType, nhAddressMask, inputIf, outputIf, sampler, classMap, " +
             "minPackets, maxPackets, minBytes, maxBytes) " +
@@ -56,7 +56,7 @@ public class NetFlowMatchCriteriaDAO {
     public static final String RETRIEVE = "SELECT srcAddressType, srcAddress, srcAddressMask, dstAddressType, dstAddress, dstAddressMask, " +
                     "srcPortLo, srcPortHi, dstPortLo, dstPortHi, srcAS, dstAS, protocol, tosByte, " +
                     "nhAddressType, nhAddress, nhAddressMask, inputIf, outputIf, sampler, classMap, " +
-                    "minPackets, maxPackets, minBytes, maxBytes FROM netflowMatchCriteria WHERE sessionID = ?";
+                    "minPackets, maxPackets, minBytes, maxBytes FROM netflowMatchCriteria WHERE collectorID = ?";
     
     /** Logging provider */
     public static Logger logger = Logger.getLogger(NetFlowMatchCriteriaDAO.class);
@@ -72,16 +72,15 @@ public class NetFlowMatchCriteriaDAO {
     /**
      * Creates a NetFlowMatchCriteria in the database.
      *
-     * @param sessionID      the session ID that the MatchCriteria belongs to
+     * @param collectorID      the session ID that the MatchCriteria belongs to
      * @param criteria       the criteria to create in the database
      */
-    public void create(int sessionID, NetFlowMatchCriteria criteria) throws DBException {
+    public void create(int collectorID, NetFlowMatchCriteria criteria) throws DBException {
         PreparedStatement statement;
-        int deviceID;
         
         try {
             statement = connection.prepareStatement(CREATE);
-            statement.setInt(1, sessionID);
+            statement.setInt(1, collectorID);
             statement.setInt(2, criteria.srcAddressType);
             statement.setInt(3, criteria.srcAddressMask);
             statement.setInt(4, criteria.dstAddressType);
@@ -109,39 +108,39 @@ public class NetFlowMatchCriteriaDAO {
             
             if ( criteria.srcAddress != null ) {
                 statement = connection.prepareStatement(UPDATE_SRCADDRESS);
-                statement.setInt(1, sessionID);
+                statement.setInt(1, collectorID);
                 statement.executeUpdate();
                 statement.close();
             }
             
             if ( criteria.dstAddress != null ) {
                 statement = connection.prepareStatement(UPDATE_DSTADDRESS);
-                statement.setInt(1, sessionID);
+                statement.setInt(1, collectorID);
                 statement.executeUpdate();
                 statement.close();
             }
             
             if ( criteria.nhAddress != null ) {
                 statement = connection.prepareStatement(UPDATE_NHADDRESS);
-                statement.setInt(1, sessionID);
+                statement.setInt(1, collectorID);
                 statement.executeUpdate();
                 statement.close();
             }
             
         } catch (SQLException e) {
-            logger.error("Problem creating NetFlowMatchCriteria in database for session " + sessionID);
-            throw new DBException("Problem creating NetFlowMatchCriteria in database for session " + sessionID, e);
+            logger.error("Problem creating NetFlowMatchCriteria in database for session " + collectorID);
+            throw new DBException("Problem creating NetFlowMatchCriteria in database for session " + collectorID, e);
         }
     }
     
-    public NetFlowMatchCriteria retrieve(int sessionID) throws DBException, UnknownHostException {
+    public NetFlowMatchCriteria retrieve(int collectorID) throws DBException, UnknownHostException {
         PreparedStatement statement;
         ResultSet result;
         NetFlowMatchCriteria criteria;
         
         try {
             statement = connection.prepareStatement(RETRIEVE);
-            statement.setInt(1, sessionID);
+            statement.setInt(1, collectorID);
             result = statement.executeQuery();
             result.next();
             criteria = new NetFlowMatchCriteria();
@@ -174,7 +173,7 @@ public class NetFlowMatchCriteriaDAO {
             statement.close();
             return criteria;
         } catch (SQLException e) {
-            throw new DBException("Problem creating NetFlow match criteria for sessionID " + sessionID, e);
+            throw new DBException("Problem creating NetFlow match criteria for collectorID " + collectorID, e);
         }
     }
     

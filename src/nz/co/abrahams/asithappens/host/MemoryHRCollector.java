@@ -19,15 +19,11 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.net.*;
+import nz.co.abrahams.asithappens.storage.DataHeadings;
+import nz.co.abrahams.asithappens.storage.DataPoint;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,7 +31,7 @@ import org.apache.log4j.Logger;
  *
  * @author  mark
  */
-public class MemoryHRCollector extends DataCollector {
+public class MemoryHRCollector implements DataCollector {
     
     /** Logging provider */
     private static Logger logger = Logger.getLogger(MemoryHRCollector.class);
@@ -43,26 +39,29 @@ public class MemoryHRCollector extends DataCollector {
     /** SNMP interface */
     private MemoryHRSNMP snmp;
 
+    /** Collector definition */
+    MemoryHRCollectorDefinition definition;
+    
     /** Allocation unit for storage object */
     protected int allocationUnits;
     
     /** Index of object in storage table */
-    protected int storageIndex;
+    //protected int storageIndex;
     
     /**
-     * Creates a new ProcessorCiscoCollector.
+     * Creates a new MemoryHRCollector.
      *
      * @param device       the name or IP address of the target device
      * @param pollInterval the polling interval in milliseconds
      */
-    public MemoryHRCollector(MemoryHRSNMP snmp, long pollInterval, int storageIndex) throws SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.STORAGE);
-
+    public MemoryHRCollector(MemoryHRCollectorDefinition definition, MemoryHRSNMP snmp) throws SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.STORAGE);
+        this.definition = definition;
         this.snmp = snmp;
-        this.storageIndex = storageIndex;
-        allocationUnits = snmp.getStorageAllocationUnits(storageIndex);
+        //this.storageIndex = storageIndex;
+        allocationUnits = snmp.getStorageAllocationUnits(definition.getMemoryIndex());
         snmp.setExpedientCollection();
-        logger.debug("Starting HR memory collector: storageIndex=" + storageIndex + ",allocationUnits=" + allocationUnits);
+        logger.debug("Starting HR memory collector: storageIndex=" + definition.getMemoryIndex() + ",allocationUnits=" + allocationUnits);
     }
     
     /**
@@ -80,7 +79,7 @@ public class MemoryHRCollector extends DataCollector {
         currentTime = System.currentTimeMillis();
         
         try {
-            storageUsed = (double)snmp.getStorageUsed(storageIndex) * allocationUnits;
+            storageUsed = (double)snmp.getStorageUsed(definition.getMemoryIndex()) * allocationUnits;
             point[0] = new DataPoint(currentTime, storageUsed);
             logger.debug("Adding value: " + storageUsed);
         } catch (SNMPException e) {
@@ -88,11 +87,15 @@ public class MemoryHRCollector extends DataCollector {
             logger.warn("Timeout fetching storage used");
         }
         
-        return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+        return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
     }
     
+    public MemoryHRCollectorDefinition getDefinition() {
+        return definition;
+    }    
+    
     public int getIndex() {
-        return storageIndex;
+        return definition.getMemoryIndex();
     }
 
     /** Empty routine as there are no resources to release. */

@@ -496,7 +496,6 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
             }
             context.getData().setTitle(titleField.getText());
             ((SetDisplaysTableModel)(setDisplaysTable.getModel())).saveDataToContext();
-            //graph.store();
             if ( graph.getContext().getData().isCollecting() && graph.getContext().getData().isStoring() ) {
                 graphDAO = DAOFactory.getDataGraphDAO();
                 graphDAO.updateGraph(graph);

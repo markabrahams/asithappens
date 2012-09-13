@@ -17,13 +17,13 @@ public enum USMLevel {
         this.snmp4jID = snmp4jID;
     }
 
-    public static USMLevel getLevel(int desiredIndex) throws SNMPException {
+    public static USMLevel getLevel(int desiredIndex) {
         for ( USMLevel level : USMLevel.values() ) {
             if ( level.index == desiredIndex ) {
                 return level;
             }
         }
-        throw new SNMPException("User security level " + desiredIndex + " not found");
+        throw new IllegalArgumentException("User security level " + desiredIndex + " not found");
     }
 
     public int getIndex() {

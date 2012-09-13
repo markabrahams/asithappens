@@ -19,8 +19,6 @@
 
 package nz.co.abrahams.asithappens.flow;
 
-import nz.co.abrahams.asithappens.core.DBException;
-
 /**
  * Represents the state - either "significant" or not - of a small number of fields
  * when grouping flow records.  This is used to mask out flow record attributes

@@ -20,14 +20,13 @@
 
 package nz.co.abrahams.asithappens.uiutil;
 
-import nz.co.abrahams.asithappens.storage.DeviceDAO;
-import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.core.DAOFactory;
-import nz.co.abrahams.asithappens.snmputil.PortsSelectorSNMP;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.util.Vector;
 import java.net.UnknownHostException;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.snmputil.PortsSelectorSNMP;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
+import nz.co.abrahams.asithappens.storage.Device;
 
 /**
  *
@@ -42,29 +41,17 @@ public class PortsSelectorModel {
     public PortsSelectorSNMP snmp;
 
     /** Set false to retrieve RO community, true for RW */
-    protected boolean retrieveRWCommunity;
+    //protected boolean retrieveRWCommunity;
+    protected SNMPAccessType snmpAccessType;
     
     /** Creates a new instance of PortsSelectorModel */
-    public PortsSelectorModel(boolean retrieveRWCommunity) {
-        this.retrieveRWCommunity = retrieveRWCommunity;
+    public PortsSelectorModel(SNMPAccessType snmpAccessType) {
+        this.snmpAccessType = snmpAccessType;
     }
-    
-    /*
-    public void setDevice(String deviceName, String community) throws UnknownHostException, SNMPException {
-        if ( retrieveRWCommunity ) {
-            device = new Device(deviceName, null, community, true);
-            snmp = new PortsSelectorSNMP(device);
-        }
-        else {
-            device = new Device(deviceName, community, null, false);
-            snmp = new PortsSelectorSNMP(device);
-        }
-    }
-    */
-    
+        
     public void setDevice(Device newDevice) throws UnknownHostException, SNMPException {
         device = newDevice;
-        snmp = new PortsSelectorSNMP(device, retrieveRWCommunity);
+        snmp = new PortsSelectorSNMP(device, snmpAccessType);
     }
     
     public Device getDevice() {
@@ -76,34 +63,9 @@ public class PortsSelectorModel {
     }
 
     public void enumeratePorts() throws SNMPException, DBException {
-        //DeviceDAO deviceDAO;
-        
         snmp.enumeratePorts();
-        /*
-        deviceDAO = DAOFactory.getDeviceDAO();
-        if ( retrieveRWCommunity )
-            deviceDAO.updateDevice(snmp.getDevice().getName(), snmp.getDevice().getSNMPVersion(),
-                    null, snmp.getDevice().getCommunityWrite(), null, null, null, null);
-        else
-            deviceDAO.updateDevice(snmp.getDevice().getName(), snmp.getDevice().getSNMPVersion(),
-                    snmp.getDevice().getCommunityRead(), null, null, null, null, null);
-        deviceDAO.closeConnection();
-        */
-        
     }
-    
-    /*
-    public String retrieveCommunity(String deviceName) throws DBException {
-        Device temporaryDevice;
         
-        temporaryDevice = new Device(deviceName);
-        if ( retrieveRWCommunity )
-            return temporaryDevice.retrieveWriteCommunity();
-        else
-            return temporaryDevice.retrieveReadCommunity();
-    }
-    */
-    
     public Vector getTableData() {
         return snmp.getPortsVector();
     }

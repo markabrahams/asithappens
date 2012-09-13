@@ -19,16 +19,12 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.snmputil.SNMPAccess;
-import nz.co.abrahams.asithappens.snmputil.SNMPType;
-import nz.co.abrahams.asithappens.snmputil.SNMPInterface;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.snmputil.SNMPScopeException;
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.snmputil.*;
 import nz.co.abrahams.asithappens.storage.Device;
 import org.apache.log4j.Logger;
-import java.net.UnknownHostException;
-import java.util.Vector;
-import java.util.LinkedList;
 
 
 /**

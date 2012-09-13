@@ -36,7 +36,7 @@ public class FlowOptionsDAO {
     
     /** FlowOptions creation SQL statement */
     public static final String CREATE = "INSERT INTO FlowOptions " +
-                "(sessionID, ipProtocol, ipSourceAddress, ipDestinationAddress, " +
+                "(collectorID, ipProtocol, ipSourceAddress, ipDestinationAddress, " +
                 "tosByte, tcpUdpSourcePort, tcpUdpDestinationPort) " +
                 "VALUES (?,?,?,?,?,?,?)";
     
@@ -44,7 +44,7 @@ public class FlowOptionsDAO {
     public static final String RETRIEVE = "SELECT ipProtocol, " +
                 "ipSourceAddress, ipDestinationAddress, " +
                 "tosByte, tcpUdpSourcePort, tcpUdpDestinationPort " +
-                "FROM FlowOptions WHERE sessionID = ?";
+                "FROM FlowOptions WHERE collectorID = ?";
     
     /** Logging provider */
     public static Logger logger = Logger.getLogger(FlowOptionsDAO.class);
@@ -60,15 +60,15 @@ public class FlowOptionsDAO {
     /**
      * Creates a FlowOptions in the database.
      *
-     * @param sessionID      the session ID that the MatchCriteria belongs to
+     * @param collectorID      the collector ID that the MatchCriteria belongs to
      * @param criteria       the criteria to create in the database
      */
-    public void create(int sessionID, FlowOptions options) throws DBException {
+    public void create(int collectorID, FlowOptions options) throws DBException {
         PreparedStatement statement;
         
         try {
             statement = connection.prepareStatement(CREATE);
-            statement.setInt(1, sessionID);
+            statement.setInt(1, collectorID);
             statement.setInt(2, options.ipProtocol ? 1 : 0);
             statement.setInt(3, options.ipSourceAddress ? 1 : 0);
             statement.setInt(4, options.ipDestinationAddress ? 1 : 0);
@@ -79,19 +79,19 @@ public class FlowOptionsDAO {
             statement.close();
             
         } catch (SQLException e) {
-            logger.error("Problem creating FlowOptions in database for session " + sessionID);
-            throw new DBException("Problem creating FlowOptions in database for session " + sessionID, e);
+            logger.error("Problem creating FlowOptions in database for collector " + collectorID);
+            throw new DBException("Problem creating FlowOptions in database for collector " + collectorID, e);
         }
     }
     
-    public FlowOptions retrieve(int sessionID) throws DBException {
+    public FlowOptions retrieve(int collectorID) throws DBException {
         PreparedStatement statement;
         ResultSet result;
         FlowOptions options;
         
         try {
             statement = connection.prepareStatement(RETRIEVE);
-            statement.setInt(1, sessionID);
+            statement.setInt(1, collectorID);
             result = statement.executeQuery();
             result.next();
             options = new FlowOptions(result.getInt("ipProtocol") == 1,
@@ -102,7 +102,7 @@ public class FlowOptionsDAO {
             statement.close();
             return options;
         } catch (SQLException e) {
-            throw new DBException("Problem creating FlowOptions for sessionID " + sessionID, e);
+            throw new DBException("Problem creating FlowOptions for collectorID " + collectorID, e);
         }
     }
     

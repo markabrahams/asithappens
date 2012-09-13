@@ -19,17 +19,16 @@
 
 package nz.co.abrahams.asithappens.response;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import nz.co.abrahams.asithappens.cartgraph.DataGraph;
+import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.core.Configuration;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataSets;
 import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.core.Configuration;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
-import nz.co.abrahams.asithappens.cartgraph.DataGraph;
 import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
-import nz.co.abrahams.asithappens.sdn.SDNContainerPanel;
+import nz.co.abrahams.asithappens.uiutil.GraphFactory;
 
 /**
  * The graphical pane for creating Response graphs.
@@ -92,37 +91,12 @@ public class MainResponsePanel extends javax.swing.JPanel {
     private void responseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_responseButtonActionPerformed
         Device device;
         int pollInterval;
-        DataCollector collector;
-        DataSets data;
-        TimeSeriesContext context;
-        DataGraph graphFrame;
+        ResponseCollectorDefinition definition;
         
-        try {
-            //data = new ResponseData(new Device(deviceField.getText()), Integer.parseInt(pollField.getText()) * 1000, "Response Graph", "ms", storeDataCheckBox.isSelected());
             device = new Device(deviceField.getText());
-            //pollInterval = Integer.parseInt(pollField.getText()) * 1000;
             pollInterval = Integer.parseInt(pollField.getText());
-            if ( Configuration.getProperty("collector.response.class").equals("windows") )
-                collector = new ResponseWindowsCollector(device, pollInterval);
-            else
-                collector = new ResponseCollector(device, pollInterval);
-            data = new DataSets(DataType.RESPONSE, collector, device, pollInterval, null, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-            context = new TimeSeriesContext(data);
-            //graphFrame = new DataGraph(context);
-            graphFrame = new DataGraph(context);
-        } catch (DBException e) {
-            ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                    "Error opening database connection", e);
-        } catch (java.net.UnknownHostException e) {
-            ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceField.getText() + "\" is valid",
-                    "Unknown host " + deviceField.getText());
-        }
-        // Should never be thrown for Response data type
-        catch (SNMPException e) {
-            ErrorHandler.modalError(null, "Application error",
-                    "Response Graph should not be using SNMP", e);
-        }
-        
+            definition = new ResponseCollectorDefinition(null, device, pollInterval, storeDataCheckBox.isSelected());
+            GraphFactory.create(definition);
     }//GEN-LAST:event_responseButtonActionPerformed
     
     

@@ -20,19 +20,16 @@
 
 package nz.co.abrahams.asithappens.storage;
 
-import nz.co.abrahams.asithappens.core.DAOFactory;
-import nz.co.abrahams.asithappens.core.DAOCreationException;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.cartgraph.DataGraphDAO;
-import nz.co.abrahams.asithappens.cartgraph.DataGraph;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.net.UnknownHostException;
-import java.util.Vector;
+import java.sql.*;
 import java.util.Iterator;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.cartgraph.DataGraph;
+import nz.co.abrahams.asithappens.cartgraph.DataGraphDAO;
+import nz.co.abrahams.asithappens.collectors.CollectorDefinitionDAO;
+import nz.co.abrahams.asithappens.core.DAOCreationException;
+import nz.co.abrahams.asithappens.core.DAOFactory;
+import nz.co.abrahams.asithappens.core.DBException;
 import org.apache.log4j.Logger;
 
 /**
@@ -43,27 +40,12 @@ public class LayoutDAO {
     
     public static final String CREATE = "INSERT INTO Layouts (layoutName) VALUES (?)";
     
+    public static final String RETRIEVE = "SELECT layoutName FROM Layouts WHERE layoutName = ?";
     public static final String RETRIEVE_GRAPHS = "SELECT graphID FROM LayoutGraphs WHERE layoutName = ?";
     public static final String RETRIEVE_LIST = "SELECT layoutName FROM Layouts ORDER BY layoutName";
     
-    public static final String RETRIEVE_SESSIONS = "SELECT sessionID FROM Graphs, LayoutGraphs WHERE Graphs.graphID = LayoutGraphs.graphID AND layoutName = ?";
+    public static final String RETRIEVE_COLLECTORS = "SELECT CollectorID FROM Graphs, LayoutGraphs WHERE Graphs.graphID = LayoutGraphs.graphID AND layoutName = ?";
     
-    public static final String DELETE_BANDWIDTHCOLLECTORS = "DELETE FROM BandwidthCollectors WHERE sessionID = ?";
-    public static final String DELETE_BANDWIDTHCOLLECTORSPORTS = "DELETE FROM BandwidthCollectors WHERE sessionID = ?";
-    public static final String DELETE_RESPONSECOLLECTORS = "DELETE FROM ResponseCollectors WHERE sessionID = ?";
-    public static final String DELETE_NBARCOLLECTORS = "DELETE FROM NbarCollectors WHERE sessionID = ?";
-    public static final String DELETE_NETFLOWCOLLECTORS = "DELETE FROM NetflowCollectors WHERE sessionID = ?";
-    public static final String DELETE_NETFLOWMATCHCRITERIA = "DELETE FROM NetflowMatchCriteria WHERE sessionID = ?";
-    public static final String DELETE_FLOWOPTIONS = "DELETE FROM FlowOptions WHERE sessionID = ?";
-    public static final String DELETE_PROCESSORCISCOCOLLECTORS = "DELETE FROM ProcessorCiscoCollectors WHERE sessionID = ?";
-    public static final String DELETE_PROCESSORHRCOLLECTORS = "DELETE FROM ProcessorHRCollectors WHERE sessionID = ?";
-    public static final String DELETE_PROCESSORUCDCOLLECTORS = "DELETE FROM ProcessorUCDCollectors WHERE sessionID = ?";
-    public static final String DELETE_MEMORYCISCOCOLLECTORS = "DELETE FROM MemoryCiscoCollectors WHERE sessionID = ?";
-    public static final String DELETE_MEMORYHRCOLLECTORS = "DELETE FROM MemoryHRCollectors WHERE sessionID = ?";
-    public static final String DELETE_MEMORYUCDCOLLECTORS = "DELETE FROM MemoryUCDCollectors WHERE sessionID = ?";
-    public static final String DELETE_CUSTOMOIDCOLLECTORS = "DELETE FROM CustomOIDCollectors WHERE sessionID = ?";
-    public static final String DELETE_CUSTOMOIDCOLLECTOROIDS = "DELETE FROM CustomOIDCollectorOIDs WHERE sessionID = ?";
-        
     //public static final String DELETE_GRAPHS = "DELETE Graphs FROM Graphs, LayoutGraphs WHERE Graphs.graphID = LayoutGraphs.graphID AND layoutName = ?";
     public static final String DELETE_GRAPH = "DELETE FROM Graphs WHERE graphID = ?";
     public static final String DELETE_LAYOUTGRAPHS = "DELETE FROM LayoutGraphs WHERE layoutName = ?";
@@ -172,47 +154,30 @@ public class LayoutDAO {
     
     public boolean deleteLayout(String name) throws DBException {
         PreparedStatement statement;
-        ResultSet sessionsResults;
-        Vector<Integer> sessionIDs;
-        int sessionID;
+        ResultSet collectorsResults;
+        Vector<Integer> collectorIDs;
+        int collectorID;
         int[] graphIDs;
+        DataSetsDAO dataSetsDAO;
+        CollectorDefinitionDAO definitionDAO;
         
         try {
-            statement = connection.prepareStatement(RETRIEVE_SESSIONS);
+            statement = connection.prepareStatement(RETRIEVE_COLLECTORS);
             statement.setString(1, name);
-            sessionsResults = statement.executeQuery();
-            sessionIDs = new Vector();
-            while ( sessionsResults.next() ) {
-                sessionIDs.add(new Integer(sessionsResults.getInt(1)));
+            collectorsResults = statement.executeQuery();
+            collectorIDs = new Vector();
+            while ( collectorsResults.next() ) {
+                collectorIDs.add(new Integer(collectorsResults.getInt(1)));
             }
-            sessionsResults.close();
+            collectorsResults.close();
             statement.close();
             
-            for ( int i = 0 ; i < sessionIDs.size() ; i++ ) {
-                sessionID = sessionIDs.elementAt(i);
-                deletebySession(DELETE_BANDWIDTHCOLLECTORS, sessionID);
-                deletebySession(DELETE_BANDWIDTHCOLLECTORSPORTS, sessionID);
-                deletebySession(DELETE_RESPONSECOLLECTORS, sessionID);
-                deletebySession(DELETE_NBARCOLLECTORS, sessionID);
-                deletebySession(DELETE_NETFLOWCOLLECTORS, sessionID);
-                deletebySession(DELETE_NETFLOWMATCHCRITERIA, sessionID);
-                deletebySession(DELETE_FLOWOPTIONS, sessionID);
-                deletebySession(DELETE_PROCESSORCISCOCOLLECTORS, sessionID);
-                deletebySession(DELETE_PROCESSORHRCOLLECTORS, sessionID);
-                deletebySession(DELETE_PROCESSORUCDCOLLECTORS, sessionID);
-                deletebySession(DELETE_MEMORYCISCOCOLLECTORS, sessionID);
-                deletebySession(DELETE_MEMORYHRCOLLECTORS, sessionID);
-                deletebySession(DELETE_MEMORYUCDCOLLECTORS, sessionID);
-                deletebySession(DELETE_CUSTOMOIDCOLLECTOROIDS, sessionID);
-                deletebySession(DELETE_CUSTOMOIDCOLLECTORS, sessionID);
+            for ( int i = 0 ; i < collectorIDs.size() ; i++ ) {
+                collectorID = collectorIDs.elementAt(i);
+                definitionDAO = DAOFactory.getCollectorDefinitionDAO(connection, collectorID);
+                definitionDAO.delete(collectorID);
             }
             
-            /*
-            statement = connection.prepareStatement(DELETE_GRAPHS);
-            statement.setString(1, name);
-            statement.executeUpdate();
-            statement.close();
-             */
             graphIDs = retrieveLayoutGraphs(name);
             for ( int i = 0 ; i < graphIDs.length ; i++ ) {
                 statement = connection.prepareStatement(DELETE_GRAPH);
@@ -234,7 +199,30 @@ public class LayoutDAO {
         } catch (SQLException e) {
             logger.error("Problem deleting layout " + name);
             throw new DBException("Cannot delete layout " + name + " from database", e);
+        } catch (DAOCreationException e) {
+            logger.error("Problem deleting layout " + name);
+            throw new DBException("Cannot delete layout " + name + " from database", e);
         }
+    }
+    
+    public boolean exists(String name) throws DBException {
+        PreparedStatement statement;
+        ResultSet results;
+        boolean exists;
+        
+        try {
+            statement = connection.prepareStatement(RETRIEVE);
+            statement.setString(1, name);
+            results = statement.executeQuery();
+            exists = results.next();
+            results.close();
+            statement.close();
+            return exists;
+        } catch (SQLException e) {
+            logger.error("Database error checking for layout " + name);
+            throw new DBException("Database error checking for layout " + name, e);
+        }
+        
     }
     
     private void deletebySession(String deleteString, int sessionID) throws SQLException {

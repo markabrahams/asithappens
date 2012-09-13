@@ -19,19 +19,24 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import java.net.UnknownHostException;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
+import nz.co.abrahams.asithappens.cartgraph.DataGraph;
+import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
+import nz.co.abrahams.asithappens.collectors.CollectorDefinition;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.host.MemoryUCDCollectorDefinition.MemoryUCDType;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataSets;
 import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
-import nz.co.abrahams.asithappens.cartgraph.DataGraph;
-import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
-import java.net.*;
-import javax.swing.*;
 import nz.co.abrahams.asithappens.uiutil.DeviceSelectorModel;
 import nz.co.abrahams.asithappens.uiutil.DeviceSelectorPanel;
+import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
+import nz.co.abrahams.asithappens.uiutil.GraphFactory;
 //import org.apache.log4j.Logger;
 
 /**
@@ -159,7 +164,7 @@ public class MainHostPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void initComponentsFinish() {
-        deviceSelectorPanel = new DeviceSelectorPanel(false);
+        deviceSelectorPanel = new DeviceSelectorPanel(SNMPAccessType.ReadOnly);
         add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 450, -1));
     }
     
@@ -173,190 +178,74 @@ public class MainHostPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_collectorTypeComboBoxActionPerformed
     
     private void storageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_storageButtonActionPerformed
-        //DeviceSelectorModel deviceSelector;
-        //String deviceName;
-        DataCollector collector;
-        DataSets data;
-        TimeSeriesContext context;
-        DataGraph graphFrame;
+        CollectorDefinition definition;
         int storageIndex;
         String storageString;
-        Device currentDevice;
-        MemoryUCDSNMP memoryUCDSNMP;
         int pollInterval;
+        boolean storing;
         
         pollInterval = Integer.parseInt(pollField.getText());
-        //deviceSelector = deviceSelectorPanel.getModel();
-        //deviceName = deviceSelector.getName();
+        storing = storeDataCheckBox.isSelected();
         if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {
-            try {
                 storageIndex = memoryHRSNMP.getStorageIndex()[((JList)(storagePane.getViewport().getView())).getSelectedIndex()];
                 storageString = (String)((JList)storagePane.getViewport().getView()).getSelectedValue();
-                collector = new MemoryHRCollector(memoryHRSNMP, pollInterval, storageIndex);
-                data = new DataSets(DataType.STORAGE, collector, device, pollInterval, storageString, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-                context = new TimeSeriesContext(data);
-                graphFrame = new DataGraph(context);
-            } catch (NullPointerException e) {
-                ErrorHandler.modalError(this, "Please enumerate resources on a device and select a storage object",
-                        "No storage object selected");
-            } catch (ArrayIndexOutOfBoundsException e) {
-                ErrorHandler.modalError(this, "Please select a storage object", "No storage object selected");
-            } catch (DBException e) {
-                ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                        "Error opening database connection", e);
-            } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
-                        "Unknown host " + device.getName());
-            } catch (SNMPException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + device.getName(), e);
-            }
+                definition = new MemoryHRCollectorDefinition(null, device, pollInterval, storing,
+                        storageString, storageIndex);
+                GraphFactory.create(definition);
         }
         
         else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_UCD ) {
-            try {
                 storageIndex = ((JList)(storagePane.getViewport().getView())).getSelectedIndex();
                 storageString = (String)((JList)storagePane.getViewport().getView()).getSelectedValue();
-                //currentDevice = new Device(deviceField.getText(), communityField.getText());
-                memoryUCDSNMP = new MemoryUCDSNMP(device);
-                collector = new MemoryUCDCollector(memoryUCDSNMP, pollInterval, storageIndex);
-                data = new DataSets(DataType.STORAGE, collector, device, pollInterval, storageString, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-                context = new TimeSeriesContext(data);
-                graphFrame = new DataGraph(context);
-            } catch (NullPointerException e) {
-                ErrorHandler.modalError(this, "Please enumerate resources on a device and select a memory type",
-                        "No memory type selected");
-            } catch (ArrayIndexOutOfBoundsException e) {
-                ErrorHandler.modalError(this, "Please select a memory type", "No memory type selected");
-            } catch (DBException e) {
-                ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                        "Error opening database connection", e);
-            } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
-                        "Unknown host " + device.getName());
-            } catch (SNMPException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + device.getName(), e);
-            }
+                definition = new MemoryUCDCollectorDefinition(null, device, pollInterval, storing,
+                        MemoryUCDType.values()[storageIndex]);
+                GraphFactory.create(definition);
         }
         
         else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_CISCO ) {
-            try {
                 storageIndex = memoryCiscoSNMP.getStorageIndex()[((JList)(storagePane.getViewport().getView())).getSelectedIndex()];
                 storageString = (String)((JList)storagePane.getViewport().getView()).getSelectedValue();
-                //currentDevice = new Device(deviceField.getText(), communityField.getText());
-                collector = new MemoryCiscoCollector(memoryCiscoSNMP, pollInterval, storageIndex);
-                data = new DataSets(DataType.STORAGE, collector, device, pollInterval, storageString, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-                context = new TimeSeriesContext(data);
-                graphFrame = new DataGraph(context);
-            } catch (NullPointerException e) {
-                ErrorHandler.modalError(this, "Please enumerate resources on a Cisco device and select a memory pool",
-                        "No memory pool selected");
-            } catch (ArrayIndexOutOfBoundsException e) {
-                ErrorHandler.modalError(this, "Please select a memory pool", "No memory pool selected");
-            } catch (DBException e) {
-                ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                        "Error opening database connection", e);
-            } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
-                        "Unknown host " + device.getName());
-            } catch (SNMPException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + device.getName(), e);
-            } catch (ClassCastException e) {
-                ErrorHandler.modalError(null, "Please ensure that the device supports Cisco memory MIB",
-                        "Cannot find Cisco memory pool information on device " + device.getName(), e);
-            }
+                definition = new MemoryCiscoCollectorDefinition(null, device, pollInterval, storing,
+                        storageString, storageIndex);
+                GraphFactory.create(definition);
         }
     }//GEN-LAST:event_storageButtonActionPerformed
     
     /** Creates a new processor graph. */
     private void processorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processorButtonActionPerformed
         DeviceSelectorModel deviceSelector;
-        String deviceName;
-        DataCollector collector;
-        DataSets data;
-        TimeSeriesContext context;
-        DataGraph graphFrame;
+        //String deviceName;
+        CollectorDefinition definition;
         int processorIndex;
         String processorString;
         Device currentDevice;
-        ProcessorUCDSNMP processorUCDSNMP;
-        ProcessorCiscoSNMP processorCiscoSNMP;
         int pollInterval;
+        boolean storing;
         
-        //pollInterval = Integer.parseInt(pollField.getText()) * 1000;
         pollInterval = Integer.parseInt(pollField.getText());
+        storing = storeDataCheckBox.isSelected();
         deviceSelector = deviceSelectorPanel.getModel();
-        deviceName = deviceSelector.getName();
-        if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {
-            
-            try {
+        
+        try {
+        if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {            
                 processorIndex = processorHRSNMP.getProcessorsIndex()[((JList)(processorsPane.getViewport().getView())).getSelectedIndex()];
                 processorString = (String)((JList)processorsPane.getViewport().getView()).getSelectedValue();
-                collector = new ProcessorHRCollector(processorHRSNMP, pollInterval, processorIndex);
-                data = new DataSets(DataType.PROCESSOR, collector, device, pollInterval, processorString, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-                context = new TimeSeriesContext(data);
-                graphFrame = new DataGraph(context);
-            } catch (NullPointerException e) {
-                ErrorHandler.modalError(this, "Please enumerate resources on a device and select a processor",
-                        "No processor selected");
-            } catch (ArrayIndexOutOfBoundsException e) {
-                ErrorHandler.modalError(this, "Please select a processor", "No processor selected");
-            } catch (DBException e) {
-                ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                        "Error opening database connection", e);
-            } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
-                        "Unknown host " + device.getName());
-            } catch (SNMPException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + device.getName(), e);
-            } catch (ClassCastException e) {
-                ErrorHandler.modalError(null, "Please ensure that device supports processor usage in the Host Resources MIB",
-                        "Cannot find processor usage information on device " + device.getName(), e);
-            }
+                definition = new ProcessorHRCollectorDefinition(null, device, pollInterval, storing,
+                        processorString, processorIndex);
+                GraphFactory.create(definition);
             
         } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_UCD ) {
-            try {
-                //currentDevice = new Device(deviceField.getText(), communityField.getText(), null, false);
                 currentDevice = deviceSelector.loadDevice();
-                processorUCDSNMP = new ProcessorUCDSNMP(currentDevice);
-                collector = new ProcessorUCDCollector(processorUCDSNMP, (long)pollInterval);
-                data = new DataSets(DataType.NETSNMP_PROCESSOR, collector, currentDevice, pollInterval, null, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-                context = new TimeSeriesContext(data);
-                graphFrame = new DataGraph(context);
-            } catch (DBException e) {
-                ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                        "Error opening database connection", e);
-            } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceName + "\" is valid",
-                        "Unknown host " + deviceName);
-            } catch (SNMPException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceName, e);
-            }
+                definition = new ProcessorUCDCollectorDefinition(null, currentDevice, pollInterval, storing);
+                GraphFactory.create(definition);
         } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_CISCO ) {
-            try {
-                //currentDevice = new Device(deviceField.getText(), communityField.getText(), null, false);
                 currentDevice = deviceSelector.loadDevice();
-                processorCiscoSNMP = new ProcessorCiscoSNMP(currentDevice);
-                collector = new ProcessorCiscoCollector(processorCiscoSNMP, pollInterval);
-                data = new DataSets(DataType.PROCESSOR, collector, currentDevice, pollInterval, null, DataSets.DIRECTION_NONE, null, storeDataCheckBox.isSelected());
-                context = new TimeSeriesContext(data);
-                graphFrame = new DataGraph(context);
-            } catch (DBException e) {
-                ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                        "Error opening database connection", e);
-            } catch (UnknownHostException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name \"" + deviceName + "\" is valid",
-                        "Unknown host " + deviceName);
-            } catch (SNMPException e) {
-                ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                        "Cannot access SNMP service on device " + deviceName, e);
-            }
+                definition = new ProcessorCiscoCollectorDefinition(null, currentDevice, pollInterval, storing);
+                GraphFactory.create(definition);
         }
-        
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_processorButtonActionPerformed
     
     /** Enumerates interfaces on the given device via SNMP. */
@@ -365,13 +254,11 @@ public class MainHostPanel extends javax.swing.JPanel {
         String deviceName;
         JList processorsList;
         JList storageList;
-        //ProcessorHRSNMP processorSNMP;
 
         deviceSelector = deviceSelectorPanel.getModel();
         deviceName = deviceSelector.getName();
         try {
             if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_HR ) {
-                //device = new Device(deviceField.getText(), communityField.getText(), null, false);
                 device = deviceSelector.loadDevice();
                 processorHRSNMP = new ProcessorHRSNMP(device);
                 processorHRSNMP.enumerateHostProcessors();
@@ -387,7 +274,6 @@ public class MainHostPanel extends javax.swing.JPanel {
                 storageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 storagePane.setViewportView((java.awt.Component)storageList);
             } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_UCD ) {
-                //device = new Device(deviceField.getText(), communityField.getText(), null, false);
                 device = deviceSelector.loadDevice();
                 processorsTitleLabel.setText("Processor list for " + deviceName);
                 processorsList = new javax.swing.JList(NO_CHOICE);
@@ -398,7 +284,6 @@ public class MainHostPanel extends javax.swing.JPanel {
                 storageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                 storagePane.setViewportView((java.awt.Component)storageList);
             } else if ( collectorTypeComboBox.getSelectedIndex() == COLLECTOR_TYPE_CISCO ) {
-                //device = new Device(deviceField.getText(), communityField.getText(), null, false);
                 device = deviceSelector.loadDevice();
                 memoryCiscoSNMP = new MemoryCiscoSNMP(device);
                 memoryCiscoSNMP.enumerateCiscoMemoryPools();
@@ -424,21 +309,6 @@ public class MainHostPanel extends javax.swing.JPanel {
         
     }//GEN-LAST:event_resourcesButtonActionPerformed
     
-    /*
-    public void retrieveCommunity() {
-        String community;
-        Device candidate;
-        
-        try {
-            candidate = new Device(deviceField.getText());
-            community = candidate.retrieveReadCommunity();
-            if ( community != null ) {
-                communityField.setText(community);
-            }
-        } catch (DBException e) {
-        }
-    }
-    */
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox collectorTypeComboBox;

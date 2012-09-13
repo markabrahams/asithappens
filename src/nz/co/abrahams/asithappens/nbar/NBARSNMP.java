@@ -27,6 +27,7 @@ import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.storage.DataSets;
 import org.apache.log4j.Logger;
 import java.net.UnknownHostException;
+import nz.co.abrahams.asithappens.storage.Direction;
 
 /**
  *
@@ -37,6 +38,12 @@ public class NBARSNMP extends SNMPInterface {
     /** Logging provider */
     private static Logger logger = Logger.getLogger(NBARSNMP.class);
 
+    /** ifDescr of interface for collecting */
+    protected int ifIndex;
+    
+    /** direction for collection */
+    protected Direction direction;
+    
     /* SNMP interface */
     //private SNMPAccess snmpAccess;
 
@@ -47,8 +54,10 @@ public class NBARSNMP extends SNMPInterface {
      * @throws UnknownHostException
      * @throws SNMPException
      */
-    public NBARSNMP(Device device) throws UnknownHostException, SNMPException {
+    public NBARSNMP(Device device, int ifIndex, Direction direction) throws UnknownHostException, SNMPException {
         super(device);
+        this.ifIndex = ifIndex;
+        this.direction = direction;
         snmpAccess = device.createSNMPWriteInterface();
     }
 
@@ -61,7 +70,7 @@ public class NBARSNMP extends SNMPInterface {
      * @param sampleTime  time between statistic samples
      * @return            MIB index of the new NBAR Top-N table
      */
-    public int setNBARTopNConfigTable(int port, int direction, int tableSize, int sampleTime) throws SNMPException {
+    public int setNBARTopNConfigTable(int tableSize, int sampleTime) throws SNMPException {
         int result;
         int tableIndex;
 
@@ -77,14 +86,14 @@ public class NBARSNMP extends SNMPInterface {
         catch (Exception e) {
 
         }
-        result = snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnpdTopNConfigIfIndex + "." + tableIndex, port);
-        result = snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnpdTopNConfigStatsSelect + "." + tableIndex, direction);
+        result = snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnpdTopNConfigIfIndex + "." + tableIndex, ifIndex);
+        result = snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnpdTopNConfigStatsSelect + "." + tableIndex, direction.getOIDIndex());
         result = snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnpdTopNConfigRequestedSize + "." + tableIndex, tableSize);
         //snmpAccess.setMIBValueGauge32(SNMPAccess.OID_cnpdTopNConfigSampleTime + "." + tableIndex, (long)sampleTime);
         snmpAccess.setMIBValueGauge32(SNMPAccess.OID_cnpdTopNConfigSampleTime + "." + tableIndex, 10);
         result = snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnpdTopNConfigStatus + "." + tableIndex, SNMPAccess.ROWSTATUS_createAndGo);
 
-        logger.info("Created Top-N table: TableIndex=" + tableIndex + ", ifIndex=" + port + ", direction=" + DataSets.DIRECTIONS[direction]
+        logger.info("Created Top-N table: TableIndex=" + tableIndex + ", ifIndex=" + ifIndex + ", direction=" + direction.toString()
                 + ", TableSize=" + tableSize + ", SampleTime=" + sampleTime);
         return tableIndex;
     }

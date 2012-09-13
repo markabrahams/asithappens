@@ -20,9 +20,9 @@
 
 package nz.co.abrahams.asithappens.collectors;
 
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
 import java.net.UnknownHostException;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 
 /**
  *
@@ -30,7 +30,8 @@ import java.net.UnknownHostException;
  */
 public interface DataCollectorDAO {
     
-    public void create(int sessionID, DataCollector collector) throws DBException;
-    public DataCollector retrieve(int sessionID) throws DBException, UnknownHostException, SNMPException;
+    public int create(CollectorDefinition collector) throws DBException;
+    public CollectorDefinition retrieve(int collectorID) throws DBException, UnknownHostException, SNMPException;
+    public void delete(int collectorID) throws DBException;
     public void closeConnection() throws DBException;
 }

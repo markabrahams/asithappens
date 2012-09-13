@@ -20,13 +20,7 @@
 
 package nz.co.abrahams.asithappens.core;
 
-import java.sql.DriverManager;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import javax.sql.rowset.CachedRowSet;
-import java.sql.SQLException;
+import java.sql.*;
 import org.apache.log4j.Logger;
 //import com.sun.rowset.CachedRowSetImpl;
 
@@ -210,6 +204,22 @@ public class DBUtil {
         
     }
     
+    public static int retrieveIntWithPK(Connection connection, String query, int keyID) throws DBException {
+        return ((Integer)(DBUtil.retrieveSingleAttributeWithPK(connection, query, keyID))).intValue();
+    }
+
+    public static long retrieveLongWithPK(Connection connection, String query, int keyID) throws DBException {
+        return ((Long)(DBUtil.retrieveSingleAttributeWithPK(connection, query, keyID))).longValue();
+    }
+
+    public static boolean retrieveBooleanWithPK(Connection connection, String query, int keyID) throws DBException {
+        return ((Byte)(DBUtil.retrieveSingleAttributeWithPK(connection, query, keyID))).intValue() == 1;
+    }
+    
+    public static String retrieveStringWithPK(Connection connection, String query, int keyID) throws DBException {
+        return (String)(DBUtil.retrieveSingleAttributeWithPK(connection, query, keyID));
+    }
+    
     /**
      * Fetches a single value from the database.  The query result must be a
      * single row, or an exception is thrown.  The value in the given column
@@ -245,6 +255,33 @@ public class DBUtil {
         } catch (SQLException e) {
             logger.error("Error fetching query: " + query + " with key " + keyName);
             throw new DBException("Error fetching query: " + query + " with key " + keyName, e);
+        }
+        
+    }
+
+    /**
+     * Fetches a single value from the database.  The query result must be a
+     * single row, or an exception is thrown.  The value in the given column
+     * of the returned row is selected.
+     *
+     * @param connection connection to database
+     * @param query      an SQL query string
+     * @param keyName    a string containing the primary key for the table
+     * @return           an object containing the typed value
+     */
+    public static int deleteWithIntKey(Connection connection, String query, int keyID) throws DBException {
+        PreparedStatement statement;
+        int result;
+        
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, keyID);
+            result = statement.executeUpdate();
+            statement.close();
+            return result;
+        } catch (SQLException e) {
+            logger.error("Error deleting rows: " + query + " with key " + keyID);
+            throw new DBException("Error deleting rows: " + query + " with key " + keyID, e);
         }
         
     }

@@ -19,18 +19,17 @@
 
 package nz.co.abrahams.asithappens.capture;
 
-import nz.co.abrahams.asithappens.storage.DataSets;
-import nz.co.abrahams.asithappens.flow.FlowOptions;
-import nz.co.abrahams.asithappens.core.Configuration;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
+import java.awt.Component;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+import javax.swing.JFileChooser;
 import nz.co.abrahams.asithappens.cartgraph.DataGraph;
+import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
+import nz.co.abrahams.asithappens.core.Configuration;
+import nz.co.abrahams.asithappens.flow.FlowOptions;
+import nz.co.abrahams.asithappens.storage.DataSets;
 import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 import nz.co.abrahams.asithappens.uiutil.ProgressBar;
-import java.io.*;
-import java.awt.Component;
-import javax.swing.*;
-import java.text.*;
-import java.util.*;
 
 /**
  * The graphical pane for creating graphs based on packet captures.

@@ -111,7 +111,6 @@ public class DataGraph extends JFrame {
             initComponents();
 
             if (dimensions != null) {
-                //setPreferredSize(new Dimension((int)dimensions.getWidth(), (int)dimensions.getHeight()));
                 setBounds(dimensions);
             }
             setAlwaysOnTop(context.getStickyWindow());
@@ -269,7 +268,7 @@ public class DataGraph extends JFrame {
     }
 
     /** Closes the graph frame. */
-    protected void closeGraph() {
+    public void closeGraph() {
         context.getData().stopCollecting();
         Layout.removeGraphFromCurrent(this);
         dispose();
@@ -290,6 +289,5 @@ public class DataGraph extends JFrame {
         graphDAO = DAOFactory.getDataGraphDAO();
         graphID = graphDAO.createGraph(null, this);
         graphDAO.closeConnection();
-
     }
 }

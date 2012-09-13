@@ -1,5 +1,5 @@
 /*
- * ProcessorCollector.java
+ * ProcessorHRCollector.java
  *
  * Created on 24 February 2006, 02:17
  *
@@ -19,15 +19,12 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import java.net.UnknownHostException;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
 import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.net.UnknownHostException;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,10 +32,13 @@ import org.apache.log4j.Logger;
  *
  * @author  mark
  */
-public class ProcessorHRCollector extends DataCollector {
+public class ProcessorHRCollector implements DataCollector {
     
     /** Logging provider */
     private static Logger logger = Logger.getLogger(ProcessorHRCollector.class);
+
+    /** Collector definition */
+    ProcessorHRCollectorDefinition definition;
 
     /** SNMP interface */
     private ProcessorHRSNMP snmp;
@@ -53,11 +53,12 @@ public class ProcessorHRCollector extends DataCollector {
      * @param processor    the index from the processor table to collect data about
      * @param pollInterval the polling interval in milliseconds
      */
-    public ProcessorHRCollector(ProcessorHRSNMP snmp, long pollInterval, int processor) throws UnknownHostException, SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.PROCESSOR);
-        this.processor = processor;
+    public ProcessorHRCollector(ProcessorHRCollectorDefinition definition, ProcessorHRSNMP snmp) throws UnknownHostException, SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.PROCESSOR);
+        //this.processor = processor;
         
         //snmp = new ProcessorHRSNMP(device);
+        this.definition = definition;
         this.snmp = snmp;
         snmp.setExpedientCollection();
         
@@ -78,15 +79,19 @@ public class ProcessorHRCollector extends DataCollector {
         currentTime = System.currentTimeMillis();
         
         try {
-            point[0] = new DataPoint(currentTime, snmp.getProcessorLoad(processor));
+            point[0] = new DataPoint(currentTime, snmp.getProcessorLoad(definition.getProcessorIndex()));
         } catch (SNMPException e) {
             //e.printStackTrace();
             point[0] = new DataPoint(currentTime);
             logger.warn("Timeout fetching processor load");
         }
         
-        return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+        return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
     }
+    
+    public ProcessorHRCollectorDefinition getDefinition() {
+        return definition;
+    }    
     
     public int getIndex() {
         return processor;

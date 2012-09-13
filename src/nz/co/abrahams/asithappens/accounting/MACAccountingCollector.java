@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.collectors.IncreasingCounter;
-import nz.co.abrahams.asithappens.core.DataType;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.snmputil.SNMPType;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
@@ -36,16 +35,24 @@ import org.apache.log4j.Logger;
  * 
  * @author mark
  */
-public class MACAccountingCollector extends DataCollector {
+public class MACAccountingCollector implements DataCollector {
 
     /**
      * Logging provider
      */
     private static Logger logger = Logger.getLogger(MACAccountingCollector.class);
+
+    /** Collector definition */
+    MACAccountingCollectorDefinition definition;
+    
     /**
      * SNMP interface
      */
     private MACAccountingSNMP snmp;
+
+    /** Number of set categories */
+    protected int setCount;
+
     /**
      * The number of bytes the previous collection
      */
@@ -65,10 +72,12 @@ public class MACAccountingCollector extends DataCollector {
      * @param pollInterval the polling interval in milliseconds
      * @param prefer64BitCounters use 64-bit counters if available
      */
-    public MACAccountingCollector(MACAccountingSNMP snmp, long pollInterval) throws UnknownHostException, SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.MAC_ACCOUNTING);
+    public MACAccountingCollector(MACAccountingCollectorDefinition definition, MACAccountingSNMP snmp) throws UnknownHostException, SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.MAC_ACCOUNTING);
+        this.definition = definition;
         this.snmp = snmp;
         //lastBytes = new ArrayList<Long>();
+        setCount = definition.getInitialHeadings().length;
         lastBytes = new ArrayList<IncreasingCounter>();
         lastTime = System.currentTimeMillis();
 
@@ -156,6 +165,10 @@ public class MACAccountingCollector extends DataCollector {
     
     public Direction getDirection() {
         return snmp.getDirection();
+    }
+    
+    public MACAccountingCollectorDefinition getDefinition() {
+        return definition;
     }
 
     /**

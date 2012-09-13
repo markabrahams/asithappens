@@ -20,11 +20,11 @@
 
 package nz.co.abrahams.asithappens.cartgraph;
 
-import nz.co.abrahams.asithappens.uiutil.SetDisplay;
-import java.util.Vector;
 import java.awt.Color;
+import java.util.Vector;
 import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext.Aggregation;
 import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext.Interpolation;
+import nz.co.abrahams.asithappens.uiutil.SetDisplay;
 
 /**
  *
@@ -96,31 +96,12 @@ public class TimeSeriesOptions {
     
     
     /** Creates a new instance of TimeSeriesOptions */
-    public TimeSeriesOptions() {
-        /*
-        this.aggregation = aggregation;
-        this.interpolation = interpolation;
-        
-        setsPositioning = data.getDataType().positioningDefault;
-        yAxisFormatUnits = data.getDataType().formatUnits;
-        bottomLeftLegend = data.getDataType().bottomLeftLegend;
-        
-        setDisplays = new Vector();
-        for ( int i = 0 ; i < data.getNumberOfSets() ; i++ ) {
-            setDisplays.add(data.getDataType().setDisplayDefaults[i % data.getDataType().setDisplayDefaults.length]);
-        }
-        */
-        
+    public TimeSeriesOptions() {        
         // defaults
         aggregation = Aggregation.Average;
         interpolation = Interpolation.None;
         setsPositioning = SetDisplay.Positioning.Grounded;
         setDisplays = new Vector();
-        /*
-        for ( int i = 0 ; i < data.getNumberOfSets() ; i++ ) {
-            setDisplays.add(SetDisplay.DYNAMIC_DEFAULTS[i % SetDisplay.DYNAMIC_DEFAULTS.length]);
-        }
-v        */
         useFixedGraphTop = false;
         fixedGraphTop = 0;
         fixedGraphTopUnits = ' ';
@@ -362,16 +343,6 @@ v        */
     public void setShowTrim(boolean flag) {
         showTrim = flag;
     }
-    
-    /*
-    public boolean isStoring() {
-        return storing;
-    }
-     
-    public void setStoring(boolean flag) {
-        storing = flag;
-    }
-     */
     
     /** @return true if the legend is at the bottom-left of the graph, false if to the right */
     public boolean getBottomLeftLegend() {

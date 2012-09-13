@@ -21,7 +21,6 @@ package nz.co.abrahams.asithappens.uiutil;
 
 import java.awt.Component;
 import javax.swing.JOptionPane;
-import javax.swing.JFrame;
 
 /**
  * Provides generic error handling.
@@ -42,8 +41,7 @@ public class ErrorHandler {
      * @param title   title of dialog
      */
     public static void modalError(Component parent, String body, String title) {
-        JOptionPane errorDialog = new JOptionPane();
-        errorDialog.showMessageDialog(parent, body, title, JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(parent, body, title, JOptionPane.ERROR_MESSAGE);
     }
     
     /**
@@ -60,7 +58,6 @@ public class ErrorHandler {
     }
     
     public static void nonModalError(String body, String title, Exception e) {
-        //JOptionPane errorDialog = new JOptionPane();
         JOptionPane.showMessageDialog(null, body, title, JOptionPane.ERROR_MESSAGE);
     }
         

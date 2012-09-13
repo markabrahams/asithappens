@@ -5,7 +5,9 @@ package nz.co.abrahams.asithappens.snmputil;
  * @author mark
  */
 public class USMUser {
-
+    
+    public static final int MINIMUM_KEY_LENGTH = 8;
+    
     private String userName;
     private USMLevel userLevel;
     private USMAuthProtocol userAuthProtocol;

@@ -1,7 +1,7 @@
 /*
  * DataCollector.java
  *
- * Created on 11 November 2003, 11:55
+ * Created on 1 September 2012, 08:25
  *
  * AsItHappens - real-time network monitor
  * Copyright (C) 2006  Mark Abrahams
@@ -19,13 +19,10 @@
 
 package nz.co.abrahams.asithappens.collectors;
 
-import nz.co.abrahams.asithappens.core.DataType;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.Device;
-import org.apache.log4j.Logger;
 
 /**
- * Provides a superclass for all "collector" classes.  A collector must provide
+ * Provides an interface for all "collector" classes.  A collector must provide
  * only two abstract methods:
  * <ol>
  * <li>getNextValues - to collect a set of data values
@@ -37,47 +34,10 @@ import org.apache.log4j.Logger;
  * events.  These are called externally, by a caller that is expected to keep
  * the convention of polling roughly every polling interval.
  * <p>
- * If the database handle is set, data will be written to the database as
- * collected.  If the database handle is "null" then data is collected but not
- * stored in the database.
  *
  * @author  mark
  */
-public abstract class DataCollector {
-    
-    /** Logging provider */
-    private static Logger logger = Logger.getLogger(DataCollector.class);
-    
-    /** Number of data sets to collect for */
-    //protected int sets;
-    
-    /** Collection target device */
-    protected Device device;
-    
-    /** The desired time interval in milliseconds between successive polling instances */
-    protected long pollInterval;
-    
-    /** Data storage object */
-    //protected DataSets data;
-    
-    /** Type of data collected */
-    protected DataType dataType;
-
-    /** Number of sets currently being collected */
-    protected int setCount;
-    
-    /**
-     * Creates a new DataCollector.  Must be called by subclass constructors.
-     *
-     * @param device       the device to poll against
-     * @param pollInterval the polling interval
-     */
-    public DataCollector(Device device, long pollInterval, DataType dataType) {
-        this.device = device;
-        this.pollInterval = pollInterval;
-        this.dataType = dataType;
-        setCount = dataType.initialSetCount();
-    }
+public interface DataCollector {
     
     /**
      * Initializes the data collector.  This is should be called in the
@@ -90,78 +50,19 @@ public abstract class DataCollector {
      *
      * @return the set of data points
      */
-    public abstract DataCollectorResponse getNextValues(DataHeadings headings);
+    public DataCollectorResponse getNextValues(DataHeadings headings);
     
     /**
      * Releases any resources the data collector may be holding.  This is called
      * when the collector is no longer required.
      */
-    public abstract void releaseCollector();
-        
-    /**
-     * Collects a single data value for each data set.
-     * <p>
-     * This method undertakes the following tasks as a part of collecting:
-     * <ul>
-     * <li> stores the time of the collection event
-     * <li> invokes getNextValues() to add a value to the end of each data set
-     * <li> adds the time and values to the database if database storing is
-     *      enabled
-     * <li> removes the oldest data values if the size of the data sets exceeds
-     *      the maximum limit
-     * </ul>
-     */
+    public void releaseCollector();
     
-    /*
-    public void collect() {
-        
-        getNextValues();
-        
-        // Database recording
-        if ( dba != null ) {
-            for ( int set = 0 ; set < data.length ; set++ )
-                dba.addValues(sessionID, set, data[set].lastElement().getTime(),
-                              data[set].lastElement().getValue() );
-        }
-        
-        // remove data values that will not be displayed
-        for ( int set = 0 ; set < data.length ; set++ ) {
-            if ( data[set].size() >= MAXIMUM_DATA_POINTS )
-                data[set].remove(0);
-        }
-    }
-     */
-
     /**
-     * Returns the target device
+     * Returns the collector definition.
      *
-     * @return the target device
+     * @return the collector definition
      */
-    public Device getDevice() {
-        return device;
-    }
-    
-    /**
-     * Returns the desired polling interval
-     *
-     * @return the polling interval
-     */
-    public long getPollInterval() {
-        return pollInterval;
-    }
-    
-    /**
-     * Returns the data type for data being collected
-     *
-     * @return the data type
-     */
-    public DataType getDataType() {
-        return dataType;
-    }
-    
-    public Class getDAOClass() throws ClassNotFoundException {
-        logger.info("Class name: " + getClass().getSimpleName());
-        return Class.forName(getClass().getSimpleName());
-    }
-    
+    public CollectorDefinition getDefinition();
+        
 }

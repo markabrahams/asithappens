@@ -18,19 +18,16 @@
  */
 package nz.co.abrahams.asithappens.storage;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.oid.CustomOIDCollector;
-import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.core.DAOFactory;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.core.Configuration;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.text.*;
-import java.net.*;
-import java.io.*;
+import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
+import nz.co.abrahams.asithappens.collectors.*;
+import nz.co.abrahams.asithappens.core.Configuration;
+import nz.co.abrahams.asithappens.core.DAOFactory;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.core.DataType;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import org.apache.log4j.Logger;
 
 /**
@@ -57,154 +54,81 @@ import org.apache.log4j.Logger;
  */
 public class DataSets implements Runnable {
 
-    /** Direction not relevant */
-    public static final int DIRECTION_NONE = 0;
-    /** Inbound direction */
-    public static final int DIRECTION_IN = 1;
-    /** Outbound direction */
-    public static final int DIRECTION_OUT = 2;
-    /** Both directions */
-    public static final int DIRECTION_BOTH = 3;
-    /** Directions */
-    public static final String[] DIRECTIONS = {"None", "In", "Out", "Both"};
     /* Logging provider */
-    protected Logger logger;
-    /** Data type */
-    protected DataType dataType;
-    /** Y-axis value units */
-    protected String valueUnits;
-    /** Collection target device */
-    protected Device device;
-    /** The desired time interval in milliseconds between successive polling instances */
-    protected long pollInterval;
-    /** An index into the ifTable specifying which interface for collection */
-    //protected int port;
-    /** A textual description of the interface for collection */
-    protected String portString;
-    /** The direction of information for collection */
-    protected int direction;
-    /** The column heading titles */
-    protected DataHeadings headings;
+    protected static Logger logger = Logger.getLogger(DataSets.class);
     /** User-supplied title for data */
-    protected String title;
-    /** The collected data is stored in an array of data sets */
-    protected Vector<DataSet> data;
-    /** Data collector */
-    protected DataCollector collector;
-    /** Collector runs in separate thread */
-    protected Thread collectorThread;
-    /** Indicates whether the DataSets object is currently collecting data */
-    protected boolean collecting;
-    /** Access for database querying or updating */
-    //protected DBAccess dba;
-    /** DataSets DAO for updating database for collecting sessions */
-    protected DataSetsDAO dataSetsDAO;
-    /** DataPoint DAO for writing newly collected data to database */
-    protected DataPointDAO dataPointDAO;
-    /** Flag for database storing */
-    protected boolean storing;
+    //protected String title;
+    /** Data type */
+    //protected DataType dataType;
+    /** Y-axis value units */
+    //protected String valueUnits;
     /** Database session ID */
     protected int sessionID;
+    /** Data collector */
+    protected DataCollector collector;
+    /** Indicates whether the DataSets object is currently collecting data */
+    protected boolean collecting;
+    /** Flag for database storing */
+    //protected boolean storing;
     /** The time of the first collection event in the data sets */
     protected long startTime;
     /** The time of the final collection event in the data sets */
     protected long finishTime;
+    /** Data attributes */
+    protected DataAttributes attributes;
+    /** The column heading titles */
+    protected DataHeadings headings;
+    /** The collected data is stored in an array of data sets */
+    protected Vector<DataSet> data;
     /** Text labels */
     protected DataLabels labels;
+    /** Collector runs in separate thread */
+    protected Thread collectorThread;
+    /** DataSets DAO for updating database for collecting sessions */
+    protected DataSetsDAO dataSetsDAO;
+    /** DataPoint DAO for writing newly collected data to database */
+    protected DataPointDAO dataPointDAO;
 
     /**
      * Creates a new instance of DataSets that has an active collector.
      *
      * @param dataType      the type of data contained
      * @param collector     the collector that populates the data sets
-     * @param device        the target collection device
-     * @param pollInterval  the polling interval in milliseconds
-     * @param portString    the text description of the associated port if any
-     * @param direction     the direction of data flow for the collection
      * @param title         the title of these sets of data
      * @param storing       indicates that data will be stored into the database
      */
-    public DataSets(DataType dataType, DataCollector collector, Device device, int pollInterval, String portString, int direction, String title, boolean storing)
+      public DataSets(DataCollector collector)
             throws DBException, UnknownHostException, SNMPException {
-        logger = Logger.getLogger(this.getClass().getName());
-        this.dataType = dataType;
+        //this.dataType = dataType;
+        //this.title = title;
         this.collector = collector;
-        this.device = device;
-        this.pollInterval = pollInterval;
-        this.portString = portString;
-        this.direction = direction;
-        this.title = title;
-        this.storing = storing;
+        //this.storing = storing;
         
-        // Nasty - fix it up please
-        if (dataType == DataType.OID) {
-            valueUnits = ((CustomOIDCollector) collector).getValueUnits();
-        } else {
-            valueUnits = dataType.units;
-        }
-
-        if (title == null) {
-            this.title = getShortDescription();
-        } else {
-            this.title = title;
-        }
+        //attributes = new DataAttributesCollector(collector.getDefinition(), title);
+        attributes = collector.getDefinition();
         this.collecting = true;
 
-        //collector.setData(this);
-
-        if (storing) {
-            // Old school
-            //dba = new DBAccess();
-            //sessionID = dba.newSession(device.getName(), pollInterval, dataType.id,
-            //        portString, this.title, direction);
-            // New school
+        if (collector.getDefinition().getStoring()) {
             dataSetsDAO = DAOFactory.getDataSetsDAO();
             dataPointDAO = DAOFactory.getDataPointDAO();
             sessionID = DAOFactory.getDataSetsDAO().createSession(this);
         } else {
-            //dba = null;
             dataSetsDAO = null;
             dataPointDAO = null;
             sessionID = -1;
         }
 
         initializeDataSets();
-        for (int set = 0; set < dataType.initialHeadings.length; set++) {
-            addSet(dataType.initialHeadings[set]);
+        for (int set = 0; set < collector.getDefinition().getInitialHeadings().length; set++) {
+            addSet(collector.getDefinition().getInitialHeadings()[set]);
         }
 
         startCollecting();
     }
 
-    /**
-     * Creates a new instance of DataSets from a previously stored session in
-     * the database, over a given time interval.
-     *
-     * @param sessionID     index in database that uniquely identifies session
-     * @param startTime     beginning of desired time period
-     * @param finishTime    end of desired time period
-     * @param aggregation   the aggregation strategy employed for larger data sets
-     */
-    /*
-    public DataSets(int sessionID, long startTime, long finishTime, int aggregation)
-    throws DatabaseException {
-    logger = Logger.getLogger(this.getClass().getName());
-    this.sessionID = sessionID;
-    this.startTime = startTime;
-    this.finishTime = finishTime;
-    this.storing = true;
-    this.collector = null;
-    this.collecting = false;
-    initializeDataSets();
-    parseResults(aggregation);
-    
-    }
-     */
     /** Creates a new empty instance of DataSets */
     public DataSets() {
-        logger = Logger.getLogger(this.getClass().getName());
-        //this.storing = true;
-        this.storing = false;
+        //this.storing = false;
         this.collector = null;
         this.collecting = false;
         initializeDataSets();
@@ -219,16 +143,14 @@ public class DataSets implements Runnable {
      * @param fileName    name of packet capture file
      */
     public DataSets(long startTime, long finishTime, String fileName) {
-        logger = Logger.getLogger(this.getClass().getName());
         this.startTime = startTime;
         this.finishTime = finishTime;
-        this.portString = fileName.substring(fileName.lastIndexOf(File.separatorChar) + 1);
-        this.storing = false;
+        //this.storing = false;
         this.collector = null;
         this.collecting = false;
         sessionID = -1;
-        dataType = DataType.CAPTURE;
-        title = getShortDescription();
+        //dataType = DataType.CAPTURE;
+        //title = getShortDescription();
         initializeDataSets();
     }
 
@@ -239,10 +161,7 @@ public class DataSets implements Runnable {
 
         data = new Vector();
         headings = new DataHeadings();
-        //headingsName = new Vector();
-        //headingsMap = new Hashtable();
         labels = new DataLabels(sessionID);
-
     }
 
     /**
@@ -294,13 +213,10 @@ public class DataSets implements Runnable {
                 //System.out.println("startInterval: " + (long)startInterval + " endInterval: " + (long)endInterval);
 
                 try {
-                    //while ( element < getNumberOfDataPoints() && ((DataPoint)(data[set].elementAt(element))).time < startInterval ) {
                     while (datum != null && datum.getTime() < startInterval) {
                         //System.out.println("Time ignored: " + findTime(element));
                         datum = iterator.next();
-                    //element++;
                     }
-                    //while ( element < getNumberOfDataPoints() && ((DataPoint)(data[set].elementAt(element))).time < endInterval ) {
                     while (datum != null && datum.getTime() < endInterval) {
                         if (datum.isDefined() == true) {
                             numValues++;
@@ -314,7 +230,6 @@ public class DataSets implements Runnable {
                             }
                         }
                         datum = iterator.next();
-                    //element++;
                     }
                 } // Thrown by iterator.next() if at end of data
                 catch (NoSuchElementException e) {
@@ -357,7 +272,7 @@ public class DataSets implements Runnable {
         data.add(new DataSet());
 
         // Database recording if enabled
-        if (isCollector() && storing) {
+        if (isCollector() && collector.getDefinition().getStoring()) {
             headingsDAO = DAOFactory.getDataHeadingsDAO();
             headingsDAO.create(sessionID, data.size() - 1, title);
             headingsDAO.closeConnection();
@@ -479,7 +394,6 @@ public class DataSets implements Runnable {
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    //ErrorHandler.modalError(this, e.toString(), "Interrupted sleep", e);
                     logger.error("Interrupted sleep");
                 }
             }
@@ -501,7 +415,7 @@ public class DataSets implements Runnable {
      * <p>
      * This method undertakes the following tasks as a part of collecting:
      * <ul>
-     * <li> invokes getNextValues() of the collector and adds the resulting
+     * <li> invokes getNextValues of the collector and adds the resulting
      *      values to the end of each data set
      * <li> adds the collected values to the database if database storing is
      *      enabled
@@ -510,7 +424,6 @@ public class DataSets implements Runnable {
      * </ul>
      */
     public void collect() {
-        //DataPoint[] newData;
         DataCollectorResponse response;
 
         try {
@@ -532,7 +445,6 @@ public class DataSets implements Runnable {
 
                 // Add new data values
                 for (int set = 0; set < data.size(); set++) {
-                    //data.elementAt(set).add(response.values[set]);
                     data.elementAt(set).addDataPoint(response.values[set]);
                 }
                 // Remove data values that will not be displayed
@@ -547,77 +459,41 @@ public class DataSets implements Runnable {
             }
 
             // Database recording if enabled
-            if (storing) {
-                for (int set = 0; set < data.size(); set++) // Old school
-                //dba.addValues(sessionID, set, data.elementAt(set).lastElement().getTime(),
-                //        data.elementAt(set).lastElement().getValue() );
-                // New school
-                {
+            if (collector.getDefinition().getStoring() && ! data.isEmpty() ) {
+                for (int set = 0; set < data.size(); set++) {
                     dataPointDAO.create(sessionID, set, data.elementAt(set).lastElement());
                 }
-                if (dataSetsDAO.retrieveSessionStartTime(sessionID) == 0) //dba.setStartTime(sessionID, data.lastElement().lastElement().getTime());
+                if (dataSetsDAO.retrieveSessionStartTime(sessionID) == 0)
                 {
                     dataSetsDAO.updateSessionStartTime(sessionID, data.lastElement().lastElement().getTime());
-                //dba.setFinishTime(sessionID, data.lastElement().lastElement().getTime());
                 }
                 dataSetsDAO.updateSessionFinishTime(sessionID, data.lastElement().lastElement().getTime());
-
             }
 
         } catch (DBException e) {
             logger.warn("Cannot store values in database");
         }
     }
-
-    /**
-     * Adds a value to the specified data set.
-     *
-     * @param set    the index of the data set to add the data point to
-     * @param point  the data point
-     */
-    /*
-    public synchronized void addValue(int set, DataPoint point) throws DatabaseException {
-    data.elementAt(set).add(point);
-    if ( storing )
-    dba.addValues(sessionID, set, data.elementAt(set).lastElement().getTime(),
-    data.elementAt(set).lastElement().getValue() );
+    
+    /** @return retrievedAttributes for the data */
+    public DataAttributes getAttributes() {
+        return attributes;
     }
-     */
-
-    /** @return the target device for data collection */
-    public synchronized Device getDevice() {
-        return device;
+    
+    public void setAttributes(DataAttributes newAttributes) {
+        attributes = newAttributes;
     }
-
-    public void setDevice(Device device) {
-        this.device = device;
-    }
-
-    /** @return the port(s) on the target device */
-    public synchronized String getPortString() {
-        return portString;
-    }
-
-    public void setPortString(String portString) {
-        this.portString = portString;
-    }
-
-    /** @return the port(s) on the target device */
-    public synchronized int getDirection() {
-        return direction;
-    }
-
-    public void setDirection(int direction) {
-        this.direction = direction;
-    }
-
+    
     /** @return the polling interval */
     public synchronized long getPollInterval() {
-        return pollInterval;
+        //return ((DataAttributesCollector)attributes).getDefinition().getPollInterval();
+        return collector.getDefinition().getPollInterval();
     }
 
     public void setPollInterval(long pollInterval) {
-        this.pollInterval = pollInterval;
+        //((DataAttributesCollector)attributes).getDefinition().setPollInterval(pollInterval);
+        //this.pollInterval = pollInterval;
+        collector.getDefinition().setPollInterval(pollInterval);
     }
 
     /** @return the time of the first collection event */
@@ -640,25 +516,25 @@ public class DataSets implements Runnable {
 
     /** @return the title of the data sets */
     public synchronized String getTitle() {
-        return title;
+        return attributes.getTitle();
     }
 
     /** @param value  the new title for the data sets */
-    public synchronized void setTitle(String value) throws DBException {
-        title = value;
-        if (storing) {
+    public synchronized void setTitle(String title) throws DBException {
+        attributes.setTitle(title);
+        if (isCollector() && collector.getDefinition().getStoring()) {
             DAOFactory.getDataSetsDAO().updateSession(this);
         }
     }
 
     /** @return units for the data set values */
     public synchronized String getValueUnits() {
-        return valueUnits;
+        return attributes.getUnits();
     }
 
     /** @param units for the data set values */
     public synchronized void setValueUnits(String units) {
-        valueUnits = units;
+        attributes.setUnits(units);
     }
 
     /**
@@ -699,11 +575,11 @@ public class DataSets implements Runnable {
 
     /** @return data type held */
     public DataType getDataType() {
-        return dataType;
+        return attributes.getDataType();
     }
 
     public void setDataType(DataType dataType) {
-        this.dataType = dataType;
+        attributes.setDataType(dataType);
     }
 
     /** @return true if the data sets is a collector */
@@ -723,38 +599,16 @@ public class DataSets implements Runnable {
 
     /** @return true if the data is being stored in the database */
     public boolean isStoring() {
-        return storing;
+        return collector != null && collector.getDefinition().getStoring();
     }
 
-    /** @return a short description of the data sets */
     public String getShortDescription() {
-        StringBuffer description;
-
-        if (dataType == DataType.CAPTURE) {
-            return "Packet capture for " + portString;
-        }
-        description = new StringBuffer();
-        description.append(dataType.description + " for " + device.getName());
-        if (dataType == DataType.BANDWIDTH || dataType == DataType.NBAR || dataType == DataType.NETFLOW || dataType == DataType.STORAGE ||
-                    dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING && portString != null) {
-            description.append(" (" + portString);
-            if (dataType == DataType.NBAR || dataType == DataType.NETFLOW ||
-                    dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING) {
-                description.append(",");
-                description.append(DataSets.DIRECTIONS[direction]);
-            }
-            description.append(")");
-        }
-        return description.toString();
+        return attributes.getDescription();
     }
-
+    
     /** @return a full description for the data sets */
     public String getDescription() {
-        if (device != null) {
-            return DataSets.getDescription(dataType, device.getName(), portString, pollInterval, direction, startTime, finishTime);
-        } else {
-            return DataSets.getDescription(dataType, null, portString, pollInterval, direction, startTime, finishTime);
-        }
+        return DataSets.getDescription(attributes.getDataType(), attributes, startTime, finishTime);
     }
 
     /**
@@ -763,31 +617,30 @@ public class DataSets implements Runnable {
      * @param  session ID
      * @return a full description for the data sets
      */
-    public static String retrieveDescription(int sessionID) throws DBException {
-        DataSetsDAO dataSetsDAO;
+    public static String retrieveDescription(DataSetsDAO dataSetsDAO, int sessionID) {
+        CollectorDefinitionDAO definitionDAO;
         DataType retrievedDataType;
-        String retrievedDevice;
-        String retrievedPort;
-        long retrievedPollInterval;
-        int retrievedDirection;
+        int collectorID;
+        CollectorDefinition retrievedAttributes;
         long retrievedStartTime;
         long retrievedFinishTime;
 
-        dataSetsDAO = DAOFactory.getDataSetsDAO();
+        try {
+            retrievedDataType = DataType.types[dataSetsDAO.retrieveSessionDataTypeID(sessionID)];
+            collectorID = dataSetsDAO.retrieveSessionCollectorID(sessionID);
+            definitionDAO = DAOFactory.getCollectorDefinitionDAO(dataSetsDAO.getConnection(), collectorID);
+            retrievedAttributes = definitionDAO.retrieve(collectorID);
+            retrievedStartTime = dataSetsDAO.retrieveSessionStartTime(sessionID);
+            retrievedFinishTime = dataSetsDAO.retrieveSessionFinishTime(sessionID);
 
-        retrievedDataType = DataType.types[dataSetsDAO.retrieveSessionDataTypeID(sessionID)];
-        retrievedDevice = dataSetsDAO.retrieveSessionDevice(sessionID);
-        retrievedPort = dataSetsDAO.retrieveSessionPort(sessionID);
-        retrievedPollInterval = dataSetsDAO.retrieveSessionPollInterval(sessionID);
-        retrievedDirection = dataSetsDAO.retrieveSessionDirection(sessionID);
-        retrievedStartTime = dataSetsDAO.retrieveSessionStartTime(sessionID);
-        retrievedFinishTime = dataSetsDAO.retrieveSessionFinishTime(sessionID);
-
-        dataSetsDAO.closeConnection();
-
-        return getDescription(retrievedDataType, retrievedDevice, retrievedPort, retrievedPollInterval,
-                retrievedDirection, retrievedStartTime, retrievedFinishTime);
+            return getDescription(retrievedDataType, retrievedAttributes, retrievedStartTime, retrievedFinishTime);
+        } catch (UnknownHostException e) {
+            logger.error("Unknown host in database " + sessionID, e);
+            return "Unknown host";
+        }
     }
+    
+    
 
     /**
      * Return a full description of the data sets described by the given information.
@@ -801,7 +654,7 @@ public class DataSets implements Runnable {
      * @param finishTime   time of most recent collection event
      * @return             a full description for the data sets
      */
-    public static String getDescription(DataType dataType, String deviceName, String portName, long pollInterval, int direction, long startTime, long finishTime) {
+    public static String getDescription(DataType dataType, DataAttributes attributes, long startTime, long finishTime) {
         StringBuffer description;
         SimpleDateFormat dateFormat, timeFormat;
         GregorianCalendar startCalendar, finishCalendar;
@@ -811,20 +664,9 @@ public class DataSets implements Runnable {
         startCalendar = new GregorianCalendar();
         finishCalendar = new GregorianCalendar();
         description = new StringBuffer();
-        description.append(dataType.description);
-        if (deviceName != null) {
-            description.append(" for " + deviceName);
-        }
-        if (dataType == DataType.BANDWIDTH || dataType == DataType.NBAR || dataType == DataType.NETFLOW || dataType == DataType.STORAGE ||
-                dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING && portName != null) {
-            description.append(" (" + portName);
-            if (dataType == DataType.NBAR || dataType == DataType.NETFLOW ||
-                    dataType == DataType.MAC_ACCOUNTING || dataType == DataType.IPPREC_ACCOUNTING) {
-                description.append(",");
-                description.append(DataSets.DIRECTIONS[direction]);
-            }
-            description.append(")");
-        }
+        
+        description.append(attributes.getDescription());
+        
         startCalendar.setTimeInMillis(startTime);
         description.append(" from " + dateFormat.format(startCalendar.getTime()) + " to ");
         finishCalendar.setTimeInMillis(finishTime);
@@ -848,7 +690,7 @@ public class DataSets implements Runnable {
                 collector.releaseCollector();
             }
             collecting = false;
-            if (storing && dataSetsDAO != null) //dba.setCollectingState(sessionID, false);
+            if (isStoring() && dataSetsDAO != null) //dba.setCollectingState(sessionID, false);
             {
                 dataSetsDAO.updateSessionCollectingState(sessionID, false);
             }
@@ -902,8 +744,6 @@ public class DataSets implements Runnable {
     public String toString() {
         StringBuffer buffer;
         buffer = new StringBuffer();
-        buffer.append("Device=" + device + ",");
-        buffer.append("Interval=" + pollInterval + ",");
         buffer.append("DataSize=" + data.size() + ",");
         buffer.append("HeadingsSize=" + headings.size() + ",");
         buffer.append("Headings={");
@@ -935,6 +775,7 @@ public class DataSets implements Runnable {
         return buffer.toString();
     }
 
+    /*
     public void deleteSession() throws DBException {
         DataSetsDAO dataSetsDAO;
 
@@ -942,5 +783,5 @@ public class DataSets implements Runnable {
         dataSetsDAO.deleteSession(sessionID);
         dataSetsDAO.closeConnection();
     }
-
+    */
 }

@@ -21,11 +21,16 @@ package nz.co.abrahams.asithappens.core;
 
 /**
  * Exception thrown when there is a problem accessing the database.  This
- * should only be thrown by database access classes.
+ * should only be thrown by database access object (DAO) classes.
+ * 
+ * This is an unchecked exception so that callers are not expected to handle
+ * it.  The rationale for this is that there is that the database is a 
+ * fundamental part of the application, and callers have little recourse
+ * for alternative action if it's not available.
  *
  * @author mark
  */
-public class DBException extends Exception {
+public class DBException extends RuntimeException {
     
     /**
      * Creates a DatabaseException instance.

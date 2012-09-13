@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.collectors.IncreasingCounter;
-import nz.co.abrahams.asithappens.core.DataType;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.snmputil.SNMPType;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
@@ -32,20 +31,25 @@ import nz.co.abrahams.asithappens.storage.Direction;
 import org.apache.log4j.Logger;
 
 /**
- * Collects MAC Accounting information.
+ * Collects IP Precedence Accounting information.
  * 
  * @author mark
  */
-public class IPPrecAccountingCollector extends DataCollector {
+public class IPPrecAccountingCollector implements DataCollector {
 
     /**
      * Logging provider
      */
     private static Logger logger = Logger.getLogger(IPPrecAccountingCollector.class);
+    
+    /** Collector definition */
+    protected IPPrecAccountingCollectorDefinition definition;
     /**
      * SNMP interface
      */
     private IPPrecAccountingSNMP snmp;
+    /** Number of set categories */
+    protected int setCount;
     /**
      * The number of bytes the previous collection
      */
@@ -63,10 +67,12 @@ public class IPPrecAccountingCollector extends DataCollector {
      * @param snmp the IP precedence accounting SNMP interface
      * @param pollInterval the polling interval in milliseconds
      */
-    public IPPrecAccountingCollector(IPPrecAccountingSNMP snmp, long pollInterval) throws UnknownHostException, SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.IPPREC_ACCOUNTING);
+    public IPPrecAccountingCollector(IPPrecAccountingCollectorDefinition definition, IPPrecAccountingSNMP snmp) throws UnknownHostException, SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.IPPREC_ACCOUNTING);
+        this.definition = definition;
         this.snmp = snmp;
         //lastBytes = new ArrayList<Long>();
+        setCount = definition.getInitialHeadings().length;
         lastBytes = new ArrayList<IncreasingCounter>();
         lastTime = System.currentTimeMillis();
 
@@ -155,6 +161,10 @@ public class IPPrecAccountingCollector extends DataCollector {
     public Direction getDirection() {
         return snmp.getDirection();
     }
+    
+    public IPPrecAccountingCollectorDefinition getDefinition() {
+        return definition;
+    }    
 
     /**
      * Empty routine as there are no resources to release.

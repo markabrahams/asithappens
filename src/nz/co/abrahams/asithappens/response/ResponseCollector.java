@@ -19,14 +19,13 @@
 
 package nz.co.abrahams.asithappens.response;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import java.net.*;
-import java.io.*;
+import nz.co.abrahams.asithappens.storage.DataHeadings;
+import nz.co.abrahams.asithappens.storage.DataPoint;
 
 /**
  * Collect response information from a device using the Java InetAddress.isReachable()
@@ -35,8 +34,10 @@ import java.io.*;
  *
  * @author mark
  */
-public class ResponseCollector extends DataCollector {
+public class ResponseCollector implements DataCollector {
     
+    /** Collector definition */
+    ResponseCollectorDefinition definition;
     /** time to wait for each poll response before giving up */
     private long timeout;
     /** address of target device */
@@ -45,11 +46,11 @@ public class ResponseCollector extends DataCollector {
     private String deviceString;    
     
     /** Creates a new instance of ResponseCollector */
-    public ResponseCollector(Device device, long pollInterval) throws UnknownHostException {
-        super(device, pollInterval, DataType.RESPONSE);
-        
-        deviceAddress = device.getResolvedAddress();
-        timeout = pollInterval / 2;
+    public ResponseCollector(ResponseCollectorDefinition definition) throws UnknownHostException {
+        //super(device, pollInterval, DataType.RESPONSE);
+        this.definition = definition;
+        deviceAddress = definition.getDevice().getResolvedAddress();
+        timeout = definition.getPollInterval() / 2;
     }
     
     public DataCollectorResponse getNextValues(DataHeadings headings) {
@@ -72,30 +73,18 @@ public class ResponseCollector extends DataCollector {
             }
             point[0] = new DataPoint(startTime, (double)responseTime);
      
-            return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+            return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
         }
         catch (IOException e) {
             point[0] = new DataPoint(startTime, timeout);
         }
-        return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+        return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
     }
 
-    /*
-    public void store(int sessionID) throws DBException {
-        DBAccess dba;
-        
-        dba = new DBAccess();
-        dba.saveResponseCollector(sessionID);
-    }
-    
-    public static ResponseCollector load(int sessionID) throws DBException, UnknownHostException, SNMPException {
-        DBAccess dba;
-        
-        dba = new DBAccess();
-        return dba.loadResponseCollector(sessionID);
+    public ResponseCollectorDefinition getDefinition() {
+        return definition;
     }    
-    */
-
+    
     public void releaseCollector() {
     }
 }

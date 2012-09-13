@@ -6,12 +6,15 @@
 
 package nz.co.abrahams.asithappens.uiutil;
 
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.core.Configuration;
-import javax.swing.*;
 import java.awt.Component;
 import java.net.UnknownHostException;
+import javax.swing.JList;
+import javax.swing.JTable;
+import nz.co.abrahams.asithappens.core.Configuration;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
+import nz.co.abrahams.asithappens.storage.Device;
 
 /**
  *
@@ -27,13 +30,13 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
     
     protected int selectionMode;
     
-    protected boolean useWriteAuth;
+    protected SNMPAccessType snmpAccessType;
     
     /** Creates new form PortsSelectorPanel */
-    public PortsSelectorPanel(boolean useWriteAuth, int selectionMode) {
-        this.useWriteAuth = useWriteAuth;
+    public PortsSelectorPanel(SNMPAccessType snmpAccessType, int selectionMode) {
+        this.snmpAccessType = snmpAccessType;
         this.selectionMode = selectionMode;
-        model = new PortsSelectorModel(useWriteAuth);
+        model = new PortsSelectorModel(snmpAccessType);
         initComponents();
         initComponentsFinish();
     }
@@ -66,14 +69,18 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
             
     private void portsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portsButtonActionPerformed
+        Device device;
         JList portsList;
         JTable portsTable;
         DeviceSelectorModel deviceSelector;
         
+        device = deviceSelectorPanel.loadDevice();
+        if (device == null)
+            return;
+        
         deviceSelector = deviceSelectorPanel.getModel();
         try {
-            //model.setDevice(deviceField.getText(), communityField.getText());
-            model.setDevice(deviceSelector.loadDevice());
+            model.setDevice(device);
             model.enumeratePorts();
             portsTitleLabel.setText("Port list for " + model.getDevice().getName());
             
@@ -91,10 +98,10 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
             }
             
         } catch (UnknownHostException e) {
-            ErrorHandler.modalError(this, "Ensure that device \"" + deviceSelector.getName() + "\" exists",
-                    "Cannot connect to device " + deviceSelector.getName());
+            ErrorHandler.modalError(this, "Please ensure that device name \"" + deviceSelector.getName() + "\" is valid",
+                    "Unknown host " + deviceSelector.getName());
         } catch (SNMPException e) {
-            ErrorHandler.modalError(this, "Ensure that device name and community string are correct",
+            ErrorHandler.modalError(this, "Please ensure that device name and SNMP authentication credentials are correct",
                     "Cannot connect to device " + deviceSelector.getName());
         } catch (DBException e) {
             ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
@@ -103,35 +110,33 @@ public class PortsSelectorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_portsButtonActionPerformed
 
     private void initComponentsFinish() {
-        deviceSelectorPanel = new DeviceSelectorPanel(useWriteAuth);
+        deviceSelectorPanel = new DeviceSelectorPanel(snmpAccessType);
         add(deviceSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 410, -1));
+    }
+    
+    public boolean isPortSelected() {
+        if ( ! getModel().hasEnumerated() ) {
+            ErrorHandler.modalError(this, "Please enumerate ports on a device and select a port",
+                    "No port selected");
+            return false;
+        } else if ( rowsSelected().length == 0 ) {
+            ErrorHandler.modalError(this, "Please select a port", "No port selected");
+            return false;
+        }
+        return true;
     }
 
     public PortsSelectorModel getModel() {
         return model;
     }
     
-    public DeviceSelectorModel getDeviceModel() {
-        return deviceSelectorPanel.getModel();
+    public Device getEnumeratedDevice() {
+        return model.getDevice();
     }
     
-    /*
-    public void retrieveCommunity() {
-        String newCommunity;
-        DeviceSelectorModel deviceSelector;
-        
-        try {
-            deviceSelector = deviceSelectorPanel.getModel();
-            newCommunity = model.retrieveCommunity(deviceSelector.getName());
-            if ( newCommunity != null )
-                communityField.setText(newCommunity);
-        } catch (DBException e) {
-            ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                    "Error opening database connection", e);
-        }
-        
-    }
-    */
+    public DeviceSelectorModel getDeviceModel() {
+        return deviceSelectorPanel.getModel();
+    }    
     
     public int rowSelected() {
         if ( portsPane.getViewport().getView() instanceof JList )

@@ -14,5 +14,5 @@ set PATH=%PATH%;%asithappensBin%
 
 rem Section 3: Start-up code
 cd "%asithappensHome%"
-for %%i in ("%asithappensLib%\*.jar") do call classpathadd.bat %%i
-"%javaExe%" -cp "%classpath%" -Djava.library.path="%asithappensNative%" nz.co.abrahams.asithappens.mainui.AsItHappens
+rem for %%i in ("%asithappensLib%\*.jar") do call classpathadd.bat %%i
+"%javaExe%" -cp "%classpath%" -Djava.ext.dirs="%asithappensLib%" -Djava.library.path="%asithappensNative%" nz.co.abrahams.asithappens.mainui.AsItHappens

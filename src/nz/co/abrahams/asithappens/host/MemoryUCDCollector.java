@@ -19,15 +19,12 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
+import nz.co.abrahams.asithappens.host.MemoryUCDCollectorDefinition.MemoryUCDType;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
 import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.net.*;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,7 +32,7 @@ import org.apache.log4j.Logger;
  *
  * @author  mark
  */
-public class MemoryUCDCollector extends DataCollector {
+public class MemoryUCDCollector implements DataCollector {
     
     /** Collector memory pools */
     public static final String[] UCD_MEMORY_TYPES = { "Real", "Swap" };
@@ -49,6 +46,9 @@ public class MemoryUCDCollector extends DataCollector {
     /** Logging provider */
     private static Logger logger = Logger.getLogger(MemoryUCDCollector.class);
 
+    /** Collector definition */
+    protected MemoryUCDCollectorDefinition definition;
+    
     /** SNMP interface */
     private MemoryUCDSNMP snmp;
 
@@ -56,23 +56,21 @@ public class MemoryUCDCollector extends DataCollector {
     protected int totalMemory;
     
     /** Type of memory */
-    protected int memoryType;
+    //protected int memoryType;
     
     /**
-     * Creates a new ProcessorCiscoCollector.
+     * Creates a new MemoryUCDCollector.
      *
-     * @param device       the name or IP address of the target device
-     * @param pollInterval the polling interval in milliseconds
      */
-    public MemoryUCDCollector(MemoryUCDSNMP snmp, long pollInterval, int memoryType) throws SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.STORAGE);
-
+    public MemoryUCDCollector(MemoryUCDCollectorDefinition definition, MemoryUCDSNMP snmp) throws SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.STORAGE);
+        this.definition = definition;
         this.snmp = snmp;
-        this.memoryType = memoryType;
+        //this.memoryType = memoryType;
         
-        if ( memoryType == UCD_MEMORY_REAL )
+        if ( definition.getMemoryType() == MemoryUCDType.Real )
             totalMemory = snmp.getUCDMemTotalReal();
-        else if ( memoryType == UCD_MEMORY_SWAP )
+        else if ( definition.getMemoryType() == MemoryUCDType.Swap )
             totalMemory = snmp.getUCDMemTotalSwap();
         snmp.setExpedientCollection();
         
@@ -92,22 +90,28 @@ public class MemoryUCDCollector extends DataCollector {
         currentTime = System.currentTimeMillis();
         
         try {
-            if ( memoryType == UCD_MEMORY_REAL )
-                point[0] = new DataPoint(currentTime, (totalMemory - snmp.getUCDMemAvailReal() ) * 1000);
-            else if ( memoryType == UCD_MEMORY_SWAP )
-                point[0] = new DataPoint(currentTime, (totalMemory - snmp.getUCDMemAvailSwap() ) * 1000);
+            if ( definition.getMemoryType() == MemoryUCDType.Real )
+                point[0] = new DataPoint(currentTime, (double)(totalMemory - snmp.getUCDMemAvailReal() ) * 1000);
+            else if ( definition.getMemoryType() == MemoryUCDType.Swap )
+                point[0] = new DataPoint(currentTime, (double)(totalMemory - snmp.getUCDMemAvailSwap() ) * 1000);
         } catch (SNMPException e) {
             point[0] = new DataPoint(currentTime);
             logger.warn("Timeout fetching processor load");
         }
         
-        return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+        return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
     }
     
+    public MemoryUCDCollectorDefinition getDefinition() {
+        return definition;
+    }    
+    
+    /*
     public int getMemoryType() {
         return memoryType;
     }
-
+    */
+    
     /** Empty routine as there are no resources to release. */
     public void releaseCollector() {
     }

@@ -32,12 +32,14 @@ import org.apache.log4j.Logger;
  * 
  * @author mark
  */
-public class SNMPTableCollector extends DataCollector {
+public class SNMPTableCollector implements DataCollector {
 
     /**
      * Logging provider
      */
     private static Logger logger = Logger.getLogger(SNMPTableCollector.class);
+    /** Collector definition */
+    CollectorDefinition definition;    
     /**
      * SNMP table polling interface
      */
@@ -45,7 +47,9 @@ public class SNMPTableCollector extends DataCollector {
     /** SNMP type of counter */
     private SNMPType snmpType;
     /** Data type of counter */
-    private DataType dataType;
+    //private DataType dataType;
+    /** Number of set categories */
+    protected int setCount;
     /**
      * The number of bytes the previous collection
      */
@@ -61,9 +65,9 @@ public class SNMPTableCollector extends DataCollector {
      *
      * @param pollInterval the polling interval in milliseconds
      */
-    public SNMPTableCollector(DataType dataType, SNMPType snmpType,
-            SNMPTableInterface snmp, long pollInterval) throws UnknownHostException, SNMPException {
-        super(snmp.getDevice(), pollInterval, dataType);
+    public SNMPTableCollector(CollectorDefinition definition, SNMPTableInterface snmp, SNMPType snmpType) throws UnknownHostException, SNMPException {
+        //super(snmp.getDevice(), pollInterval, dataType);
+        this.definition = definition;
         this.snmpType = snmpType;
         this.snmp = snmp;
         lastBytes = new ArrayList<IncreasingCounter>();
@@ -146,10 +150,16 @@ public class SNMPTableCollector extends DataCollector {
 
     }
     
+    /*
     public SNMPType getSNMPType() {
         return snmpType;
     }
-
+    */
+    
+    public CollectorDefinition getDefinition() {
+        return definition;
+    }    
+    
     /**
      * Empty routine as there are no resources to release.
      */

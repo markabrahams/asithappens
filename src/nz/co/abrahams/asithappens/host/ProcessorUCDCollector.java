@@ -7,7 +7,7 @@
  * Copyright (C) 2006  Mark Abrahams
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the .+++++..   GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
@@ -19,15 +19,11 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.net.*;
+import nz.co.abrahams.asithappens.storage.DataHeadings;
+import nz.co.abrahams.asithappens.storage.DataPoint;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,7 +31,7 @@ import org.apache.log4j.Logger;
  *
  * @author  mark
  */
-public class ProcessorUCDCollector extends DataCollector {
+public class ProcessorUCDCollector implements DataCollector {
     
     /** Time tick period in milliseconds */
     private static final int TICK_PERIOD = 10;
@@ -46,6 +42,9 @@ public class ProcessorUCDCollector extends DataCollector {
     /** Logging provider */
     private static Logger logger = Logger.getLogger(ProcessorUCDCollector.class);
 
+    /** Collector definition */
+    ProcessorUCDCollectorDefinition definition;
+    
     /** SNMP interface */
     private ProcessorUCDSNMP snmp;
     
@@ -64,10 +63,11 @@ public class ProcessorUCDCollector extends DataCollector {
      * @param device       the name or IP address of the target device
      * @param pollInterval the polling interval in milliseconds
      */
-    public ProcessorUCDCollector(ProcessorUCDSNMP snmp, long pollInterval) throws SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.NETSNMP_PROCESSOR);
-
+    public ProcessorUCDCollector(ProcessorUCDCollectorDefinition definition, ProcessorUCDSNMP snmp) throws SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.NETSNMP_PROCESSOR);
+        this.definition = definition;
         this.snmp = snmp;
+        
         lastTime = System.currentTimeMillis();
         lastTicks = fetchUsageCounters();
         snmp.setExpedientCollection();
@@ -91,7 +91,7 @@ public class ProcessorUCDCollector extends DataCollector {
         boolean clockedCounter;
         
         newTicks = new long[USAGE_CATEGORIES];
-        returnData = new DataPoint[dataType.initialSetCount()];
+        returnData = new DataPoint[definition.getInitialHeadings().length];
         currentTime = System.currentTimeMillis();
         
         try {
@@ -117,7 +117,7 @@ public class ProcessorUCDCollector extends DataCollector {
                 }
                 lastTime = currentTime;
             } else {
-                for ( int i = 0; i < dataType.initialSetCount(); i++ ) {
+                for ( int i = 0; i < definition.getInitialHeadings().length; i++ ) {
                     if ( Double.isNaN(lastPercentages[i]) )
                         returnData[i] = new DataPoint(currentTime);
                     else
@@ -125,13 +125,13 @@ public class ProcessorUCDCollector extends DataCollector {
                 }
             }
         } catch (SNMPException e) {
-            for ( int i = 0; i < dataType.initialSetCount(); i++ ) {
+            for ( int i = 0; i < definition.getInitialHeadings().length; i++ ) {
                 returnData[i] = new DataPoint(currentTime);
             }
             logger.warn("Timeout fetching processor load");
         }
         
-        return new DataCollectorResponse(returnData, new String[0], dataType.initialSetCount());
+        return new DataCollectorResponse(returnData, new String[0], definition.getInitialHeadings().length);
     }
     
     protected long[] fetchUsageCounters() throws SNMPException {
@@ -148,6 +148,10 @@ public class ProcessorUCDCollector extends DataCollector {
         
         return counters;
     }
+    
+    public ProcessorUCDCollectorDefinition getDefinition() {
+        return definition;
+    }    
     
     /** Empty routine as there are no resources to release. */
     public void releaseCollector() {

@@ -47,15 +47,10 @@ import org.snmp4j.util.TableUtils;
 public class SNMPAccess {
 
     public static final long SIGNED_32BIT_MINIMUM = Integer.MIN_VALUE;
-    
     public static final long SIGNED_32BIT_MAXIMUM = Integer.MAX_VALUE;
-    
     public static final long UNSIGNED_32BIT_MAXIMUM = 4294967295L;
-    
     public static final long SIGNED_64BIT_MINIMUM = Long.MIN_VALUE;
-    
     public static final long SIGNED_64BIT_MAXIMUM = Long.MAX_VALUE;
-    
     public static final int VERSION = 0;
     public static final int SNMP_UDP_PORT = 161;
     public static final int DEFAULT_INITIAL_TIMEOUT = 2000;
@@ -172,7 +167,7 @@ public class SNMPAccess {
     /**
      * SNMP4J interface
      */
-    protected Snmp snmp;
+    protected static Snmp snmp;
     /**
      * SNMP4J target
      */
@@ -184,7 +179,7 @@ public class SNMPAccess {
     /**
      * SNMP4J transport mapping
      */
-    protected TransportMapping transport;
+    protected static TransportMapping transport;
     // END SNMP4J library variables
 
     /**
@@ -210,9 +205,10 @@ public class SNMPAccess {
         this.community = community;
 
         try {
-            transport = new DefaultUdpTransportMapping();
-            snmp = new Snmp(transport);
-            snmp.listen();
+            //transport = new DefaultUdpTransportMapping();
+            //snmp = new Snmp(transport);
+            //snmp.listen();
+            initSNMP4J();
             target = new CommunityTarget();
             ((CommunityTarget) target).setCommunity(new OctetString(community));
             target.setAddress(new UdpAddress(address, SNMP_UDP_PORT));
@@ -234,13 +230,15 @@ public class SNMPAccess {
         this.user = user;
 
         try {
-            transport = new DefaultUdpTransportMapping();
-            snmp = new Snmp(transport);
-            usm = new USM(SecurityProtocols.getInstance(),
-                    new OctetString(MPv3.createLocalEngineID()), 0);
-            SecurityModels.getInstance().addSecurityModel(usm);
-            snmp.listen();
-
+            //transport = new DefaultUdpTransportMapping();
+            //snmp = new Snmp(transport);
+            //snmp.listen();
+            initSNMP4J();
+            if (usm == null) {
+                usm = new USM(SecurityProtocols.getInstance(),
+                        new OctetString(MPv3.createLocalEngineID()), 0);
+                SecurityModels.getInstance().addSecurityModel(usm);
+            }
             snmp.getUSM().addUser(new OctetString(user.getUserName()),
                     new org.snmp4j.security.UsmUser(
                     new OctetString(user.getUserName()),
@@ -267,6 +265,18 @@ public class SNMPAccess {
 
     public SNMPAccess(InetAddress address, USMUser user) throws SNMPException {
         this(address, user, DEFAULT_TIMEOUT);
+    }
+
+    private void initSNMP4J() throws IOException {
+        if (transport == null) {
+            transport = new DefaultUdpTransportMapping();
+        }
+        if (snmp == null) {
+            snmp = new Snmp(transport);
+        }
+        if (!transport.isListening()) {
+            snmp.listen();
+        }
     }
 
     /**
@@ -651,8 +661,8 @@ public class SNMPAccess {
         events = tableUtils.getTable(target, convertOIDs(columns), null, null);
         eventIterator = events.iterator();
         rows = new LinkedList<SNMPTableRow>();
-        
-        while ( eventIterator.hasNext() ) {
+
+        while (eventIterator.hasNext()) {
             rows.add(new SNMPTableRow(eventIterator.next()));
         }
         return rows;
@@ -660,7 +670,7 @@ public class SNMPAccess {
 
     protected static OID[] convertOIDs(String[] strings) {
         OID[] oids;
-        
+
         oids = new OID[strings.length];
         for (int i = 0; i < strings.length; i++) {
             oids[i] = new OID(strings[i]);

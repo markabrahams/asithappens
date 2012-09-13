@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.core.DataType;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
 import nz.co.abrahams.asithappens.storage.DataPoint;
@@ -41,37 +40,41 @@ import org.apache.log4j.Logger;
  *
  * @author mark
  */
-public class IPAccountingCheckpointCollector extends DataCollector {
+public class IPAccountingCheckpointCollector implements DataCollector {
 
     /**
      * Logging provider
      */
     private static Logger logger = Logger.getLogger(IPAccountingCheckpointCollector.class);
+    
+    /** Collector definition */
+    IPAccountingCheckpointCollectorDefinition definition;
+    
     /**
      * SNMP interface
      */
     private IPAccountingCheckpointSNMP snmp;
-    /**
-     * The number of bytes the previous collection
-     */
-    //private ArrayList<Integer> lastBytes;
+    
+    /** Number of set categories */
+    protected int setCount;
+
     /**
      * The time that the previous successful collection was made
      */
-    //protected ArrayList<Long> lastTime;
     protected long lastTime;
 
     /**
      * Creates a new IPAccountingCheckpointCollector.
      *
      * @param device the name or IP address of the target device
-     * @param ports the set of interfaces from the ifTable to collect data about
      * @param pollInterval the polling interval in milliseconds
-     * @param prefer64BitCounters use 64-bit counters if available
      */
-    public IPAccountingCheckpointCollector(IPAccountingCheckpointSNMP snmp, long pollInterval) throws UnknownHostException, SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.ACCOUNTING);
+    public IPAccountingCheckpointCollector(IPAccountingCheckpointCollectorDefinition definition, IPAccountingCheckpointSNMP snmp) throws UnknownHostException, SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.ACCOUNTING);
+        this.definition = definition;
         this.snmp = snmp;
+        
+        setCount = definition.getInitialHeadings().length;
         //lastBytes = new ArrayList<Integer>();
         lastTime = System.currentTimeMillis();
 
@@ -150,6 +153,10 @@ public class IPAccountingCheckpointCollector extends DataCollector {
         //return new DataCollectorResponse(points, (String[]) newSets.toArray(), setCount);
         return new DataCollectorResponse(points, (String[]) newSets.toArray(new String[newSets.size()]), setCount);
 
+    }
+    
+    public IPAccountingCheckpointCollectorDefinition getDefinition() {
+        return definition;
     }
 
     /**

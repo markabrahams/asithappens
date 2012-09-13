@@ -85,7 +85,7 @@ public class USMUserDAO {
         }
     }
 
-    public USMUser retrieve(int userID) throws DBException, SNMPException {
+    public USMUser retrieve(int userID) throws DBException {
         PreparedStatement statement;
         ResultSet results;
         String userName = null;

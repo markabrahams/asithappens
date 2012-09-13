@@ -25,7 +25,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import nz.co.abrahams.asithappens.core.*;
+import nz.co.abrahams.asithappens.storage.Layout;
 import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -78,6 +80,7 @@ public class AsItHappens extends JFrame {
         setPreferredSize(new Dimension(Configuration.getPropertyInt("gui.main.frame.width"), Configuration.getPropertyInt("gui.main.frame.height")));
         setMinimumSize(new Dimension(Configuration.getPropertyInt("gui.main.frame.width"), Configuration.getPropertyInt("gui.main.frame.height")));
         setIconImage(Toolkit.getDefaultToolkit().getImage(Configuration.FRAME_ICON));
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         mainPanel = new MainTabbedPanel();
         statusLabel = new javax.swing.JLabel();
@@ -95,6 +98,19 @@ public class AsItHappens extends JFrame {
 
     /** Closes the main application frame. */
     private void exitForm() {
+        int decision;
+        
+        if (!Layout.currentIsEmpty()) {
+            decision = JOptionPane.showConfirmDialog(this, "Do you want to close all open graphs?",
+                    "Graphs open", JOptionPane.YES_NO_CANCEL_OPTION);
+            if (decision == JOptionPane.YES_OPTION) {
+                while (!Layout.currentIsEmpty()) {
+                    Layout.getCurrentGraphs().get(0).closeGraph();
+                }
+            } else if (decision == JOptionPane.CANCEL_OPTION) {
+                return;
+            }
+        }
         dispose();
     }
 

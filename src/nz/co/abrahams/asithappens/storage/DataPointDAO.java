@@ -20,8 +20,10 @@
 
 package nz.co.abrahams.asithappens.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import nz.co.abrahams.asithappens.core.DBException;
-import java.sql.*;
 import org.apache.log4j.Logger;
 
 

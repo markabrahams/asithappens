@@ -19,20 +19,14 @@
 
 package nz.co.abrahams.asithappens.netflow;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
+import nz.co.abrahams.asithappens.core.Configuration;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccess;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
 import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.flow.FlowOptions;
-import nz.co.abrahams.asithappens.*;
-import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.snmputil.SNMPAccess;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.core.Configuration;
-import java.util.*;
-import java.net.UnknownHostException;
 import org.apache.log4j.Logger;
 
 /**
@@ -40,30 +34,23 @@ import org.apache.log4j.Logger;
  *
  * @author mark
  */
-public class NetFlowCollector extends DataCollector {
+public class NetFlowCollector implements DataCollector {
     
     public static final int DEFAULT_TABLE_SIZE = 10;
     
     /** Logging provider */
     private static Logger logger = Logger.getLogger(NetFlowCollector.class);
 
+    /** Collector definition */
+    NetFlowCollectorDefinition definition;
+    
     /** SNMP interface */
     private NetFlowSNMP snmp;
 
-    /** An index into the ifTable specifying which interface to collect for */
-    private int port;
-    /** A textual description of the interface */
-    private String portString;
-    /** Direction of traffic to examine */
-    private int direction;
+    /** Number of set categories */
+    protected int setCount;
     /** Size of TopN table */
     private int tableSize;
-    /** TopN table index */
-    protected int tableIndex;
-    /** NetFlow match criteria */
-    protected NetFlowMatchCriteria criteria;
-    /** Flow mask options */
-    protected FlowOptions options;
     /** Underlying data */
     //protected DataSets data;
     /** Existing flows */
@@ -76,43 +63,27 @@ public class NetFlowCollector extends DataCollector {
     protected int previousDirection;
     
     /** Creates a new NetFlowCollector. */
-    public NetFlowCollector(NetFlowSNMP snmp, int port, String portString, int direction, int tableSize, long pollInterval, NetFlowMatchCriteria criteria, FlowOptions options)
+    public NetFlowCollector(NetFlowCollectorDefinition definition, NetFlowSNMP snmp)
     throws SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.NETFLOW);
-
+        this.definition = definition;
         this.snmp = snmp;
-        this.port = port;
-        this.portString = portString;
-        this.direction = direction;
-        this.tableSize = tableSize;
-        this.criteria = criteria;
-        this.options = options;
+        this.tableSize = Configuration.getPropertyInt("collector.netflow.table.size");
         
         flows = new Vector();
         setMappings = new Vector();
         //lastCollections = new Vector();
         initCollector();
-        //tableIndex = device.setNBARTopNConfigTable(port, direction, tableSize, (int)pollInterval / 1000);
         logger.debug("Created NetFlow collector: " + toString());
     }
     
     /** Initializes the NetFlow collector. */
     protected void initCollector() throws SNMPException {
-        int newDirection;
-        
-        previousDirection = snmp.getNetFlowEnable(port);
-        /*
-        if ( previousDirection != direction && previousDirection != DataSets.DIRECTION_BOTH ) {
-            newDirection = previousDirection == 0 ? direction : DataSets.DIRECTION_BOTH;
-            snmp.setNetFlowEnable(port, newDirection);
-        }
-         */
-        snmp.setNetFlowEnable(port, direction);
-        snmp.setNetFlowMatchCriteria(criteria);
+        previousDirection = snmp.getNetFlowEnable();
+        snmp.setNetFlowEnable(definition.getDirection().getOIDIndex());
+        snmp.setNetFlowMatchCriteria(definition.getCriteria());
         snmp.setNetFlowTopFlowsTopNTable(tableSize);
         snmp.setNetFlowTopFlowsSortBy(SNMPAccess.NETFLOW_TOPN_SORT_BY_BYTES);
-        snmp.setNetFlowTopFlowsCacheTimeout(pollInterval);
-        //snmp.setNetFlowMatchCriteria(criteria);
+        snmp.setNetFlowTopFlowsCacheTimeout(definition.getPollInterval());
         snmp.setExpedientCollection();
     }
     
@@ -149,7 +120,7 @@ public class NetFlowCollector extends DataCollector {
                 foundSet = false;
                 logger.debug("Adding flow " + (flows.size() - 1) + " for flow at table position " + index);
                 for (int flow = 0; flow < flows.size() - 1; flow++ ) {
-                    if ( table[index].matches(flows.elementAt(flow), options) ) {
+                    if ( table[index].matches(flows.elementAt(flow), definition.getOptions()) ) {
                         logger.debug("Flow " + (flows.size() - 1) + " maps to set " + setMappings.elementAt(flow));
                         setMappings.add(new Integer(setMappings.elementAt(flow)));
                         flow = flows.size();
@@ -177,7 +148,7 @@ public class NetFlowCollector extends DataCollector {
                         logger.warn("Set count for collector (" + setCount + ") has different size to data store ("
                                 + headings.size() + newSets.size() + ")");
                     setMappings.add(new Integer(setCount));
-                    newSets.add(table[index].printable(options));
+                    newSets.add(table[index].printable(definition.getOptions()));
                     //setCount = setMappings.size() + newSets.size();
                     setCount++;
                     logger.debug("Flow " + (flows.size() - 1) + " maps to set " + setMappings.elementAt(setCount - 1));
@@ -199,32 +170,44 @@ public class NetFlowCollector extends DataCollector {
             flows.set(tableMappings[index], table[index]);
         }
         for (int set = 0; set < setCount; set++ ) {
-            points[set].setValue(points[set].getValue() * 8 / ( pollInterval / 1000 ) );
+            points[set].setValue(points[set].getValue() * 8 / ( definition.getPollInterval() / 1000 ) );
         }
         
         return new DataCollectorResponse(points, (String[])newSets.toArray(new String[newSets.size()]), setCount);
     }
     
+    /*
     public String getIfDescr() {
         return portString;
     }
+    */
     
+    /*
     public int getDirection() {
         return direction;
     }
+    */
     
     public int getTableSize() {
         return tableSize;
     }
     
+    /*
     public NetFlowMatchCriteria getCriteria() {
         return criteria;
     }
+    */
     
+    /*
     public FlowOptions getOptions() {
         return options;
     }
+    */
 
+    public NetFlowCollectorDefinition getDefinition() {
+        return definition;
+    }    
+    
     public void releaseCollector() {
         NetFlowMatchCriteria defaults;
         
@@ -233,11 +216,11 @@ public class NetFlowCollector extends DataCollector {
             snmp.setReliableCollection();
             snmp.setNetFlowTopFlowsTopNTable(0);
             snmp.setNetFlowTopFlowsCacheTimeout(0);
-            snmp.restoreDefaultNetFlowMatchCriteria(criteria);
+            snmp.restoreDefaultNetFlowMatchCriteria(definition.getCriteria());
             if ( Configuration.getProperty("collector.netflow.configuration.restore").equals("on") ) {
-                snmp.setNetFlowEnable(port, previousDirection);
+                snmp.setNetFlowEnable(previousDirection);
             } else if ( Configuration.getProperty("collector.netflow.configuration.restore").equals("clear") ) {
-                snmp.setNetFlowEnable(port, 0);
+                snmp.setNetFlowEnable(0);
             }
         } catch (SNMPException e) {
             logger.warn("Problem restoring previous NetFlow state: " + e);

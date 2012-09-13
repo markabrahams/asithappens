@@ -16,19 +16,19 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 package nz.co.abrahams.asithappens.uiutil;
 
-import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.net.UnknownHostException;
 import javax.swing.*;
-import nz.co.abrahams.asithappens.core.DBException;
 import nz.co.abrahams.asithappens.mainui.SNMPAuthenticationDialog;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
 import nz.co.abrahams.asithappens.storage.Device;
 
 /**
@@ -38,18 +38,13 @@ import nz.co.abrahams.asithappens.storage.Device;
 public class DeviceSelectorPanel extends JPanel {
 
     private JLabel deviceLabel;
-
     private JTextField nameField;
-
     private JButton authButton;
-    
-    private boolean useWriteAuth;
-    
-    private Device device;
+    private SNMPAccessType snmpAccessType;
 
-    public DeviceSelectorPanel(boolean useWriteAuth) {
+    public DeviceSelectorPanel(SNMPAccessType snmpAccessType) {
         initComponents();
-        this.useWriteAuth = useWriteAuth;
+        this.snmpAccessType = snmpAccessType;
     }
 
     private void initComponents() {
@@ -61,16 +56,18 @@ public class DeviceSelectorPanel extends JPanel {
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
-        constraints.insets = new Insets(0,0,10,0);
+        constraints.insets = new Insets(0, 0, 10, 0);
         add(deviceLabel, constraints);
 
         nameField = new JTextField();
         nameField.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent evt) {
                 editDialog();
             }
         });
         nameField.addFocusListener(new FocusAdapter() {
+
             @Override
             public void focusLost(FocusEvent evt) {
                 //nameFieldFocusLost(evt);
@@ -79,7 +76,7 @@ public class DeviceSelectorPanel extends JPanel {
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 0;
-        constraints.insets = new Insets(0,10,10,0);
+        constraints.insets = new Insets(0, 10, 10, 0);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.ipadx = 6;
         constraints.ipady = 6;
@@ -89,48 +86,60 @@ public class DeviceSelectorPanel extends JPanel {
         authButton = new JButton();
         authButton.setText("Auth");
         authButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent evt) {
                 editDialog();
             }
-        });        
+        });
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.PAGE_START;
-        constraints.insets = new Insets(0,10,0,0);
+        constraints.insets = new Insets(0, 10, 0, 0);
         add(authButton, constraints);
     }
-    
-    public DeviceSelectorModel getModel() {
-        return new DeviceSelectorModel(nameField.getText(), useWriteAuth);
+
+    public Device loadDevice() {
+        DeviceSelectorModel model;
+
+        if (nameField.getText().isEmpty()) {
+            ErrorHandler.modalError(this, "Please enter a device name", "Device field is empty");
+            return null;
+        }
+
+        try {
+            model = getModel();
+            if (!model.deviceExists()) {
+                ErrorHandler.modalError(this, "Please enter authentication credentials for " + nameField.getText(),
+                        "No SNMP authentication credentials");
+                return null;
+            }
+            return model.loadDevice();
+        } catch (UnknownHostException e) {
+            ErrorHandler.modalError(null, "Please ensure that device name \"" + nameField.getText() + "\" is valid",
+                    "Unknown host " + nameField.getText());
+            return null;
+        }
     }
-    
-    public void setUseWriteAuth(boolean newUseWriteAuth) {
-        useWriteAuth = newUseWriteAuth;
+
+    public DeviceSelectorModel getModel() {
+        return new DeviceSelectorModel(nameField.getText(), snmpAccessType);
+    }
+
+    public void setUseWriteAuth(SNMPAccessType newType) {
+        snmpAccessType = newType;
     }
 
     private void editDialog() {
         SNMPAuthenticationDialog dialog;
 
-        if ( nameField.getText().isEmpty() ) {
+        if (nameField.getText().isEmpty()) {
             ErrorHandler.modalError(this, "Please enter a device name", "Empty device name");
             return;
         }
 
-        dialog = new SNMPAuthenticationDialog((JFrame)(SwingUtilities.getWindowAncestor(this)), true, nameField.getText(), useWriteAuth);
+        dialog = new SNMPAuthenticationDialog((JFrame) (SwingUtilities.getWindowAncestor(this)), true, nameField.getText(), snmpAccessType);
         dialog.setVisible(true);
-        
+
     }
-    
-    /*
-    public String retrieveCommunity(String deviceName) throws DBException {
-        Device temporaryDevice;
-        
-        temporaryDevice = new Device(deviceName);
-        if ( useWriteAuth )
-            return temporaryDevice.retrieveWriteCommunity();
-        else
-            return temporaryDevice.retrieveReadCommunity();
-    }
-    */
 }

@@ -1,17 +1,12 @@
 CREATE TABLE `Sessions` (
   `sessionID` int(11) NOT NULL auto_increment,
   `dataTypeID` int(11) NOT NULL default '0',
-  `collectorDAOID` int(11) default NULL,
-  `userVisible` tinyint(1) NOT NULL default '1',
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  `port` varchar(255) default NULL,
-  `direction` int(11) default NULL,
+  `collectorID` int(11) default NULL,
+--  `userVisible` tinyint(1) NOT NULL default '1',
   `startTime` bigint(20) NOT NULL default '0',
   `finishTime` bigint(20) default NULL,
   `collecting` tinyint(1) NOT NULL default '1',
   `title` varchar(255) default NULL,
-  `storing` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`sessionID`)
 );
 
@@ -43,7 +38,8 @@ CREATE TABLE `Devices` (
   `name` varchar(255) NOT NULL,
   `ipAddress` varchar(255) default NULL,
   `hardwareAddress` varchar(255) default NULL,
-  `snmpVersion` int(11) NOT NULL default '1',
+  `snmpVersionRead` int(11) NOT NULL default '1',
+  `snmpVersionWrite` int(11) NOT NULL default '1',
   `communityRead` varchar(255) default NULL,
   `communityWrite` varchar(255) default NULL,
   `userReadID` int(11) default NULL,
@@ -69,15 +65,14 @@ CREATE TABLE `Layouts` (
 
 CREATE TABLE `Graphs` (
   `graphID` int(11) NOT NULL auto_increment,
+  `isTemplate` tinyint(1) NOT NULL default '0',
   `sessionID` int(11) NOT NULL,
+  `collectorID` int(11) NOT NULL,
   `graphOptionsID` int(11) NOT NULL,
   `x` int(11) default '0',
   `y` int(11) default '0',
   `width` int(11) default '200',
   `height` int(11) default '200',
---  `xAxisScaling` varchar(255) default 'ConstantPixelWidth',
---  `autoGraphTop` double default '100',
---  `legendPanelWidth` int(11) default '0',
   PRIMARY KEY (`graphID`)
 );
 
@@ -123,49 +118,56 @@ CREATE TABLE `GraphOptionsSetDisplays` (
   PRIMARY KEY (`graphOptionsID`,`setNumber`)
 );
 
-CREATE TABLE `BandwidthCollectors` (
-  `sessionID` int(11) NOT NULL,
+CREATE TABLE `CollectorDefinitions` (
+  `collectorID` int(11) NOT NULL auto_increment,
+  `collectorType` int(11) default NULL,
+  `title` varchar(255) default NULL,
+  `storing` tinyint(1) NOT NULL default '0',
   `device` varchar(255) NOT NULL default '',
   `pollInterval` bigint(20) default NULL,
+  `dataType` int(11) NOT NULL,
+  `units` varchar(255) NOT NULL,
+  PRIMARY KEY(`collectorID`)
+);
+
+CREATE TABLE `InterfaceDirectionCollectorDefinitions` (
+  `collectorID` int(11) NOT NULL,
+  `ifDescr` varchar(255) NOT NULL default '',
+  `direction` int(11) NOT NULL default '0',
+  PRIMARY KEY(`collectorID`)
+);
+
+CREATE TABLE `BandwidthCollectors` (
+  `collectorID` int(11) NOT NULL,
   `prefer64BitCounters` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `BandwidthCollectorPorts` (
-  `sessionID` int(11) NOT NULL,
+  `collectorID` int(11) NOT NULL,
   `port` varchar(255) NOT NULL,
-  PRIMARY KEY (`sessionID`, `port`)
+  PRIMARY KEY (`collectorID`, `port`)
 );
 
 CREATE TABLE `ResponseCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `NbarCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  `ifDescr` varchar(255) default NULL,
-  `direction` int(11) default NULL,
+  `collectorID` int(11) NOT NULL,
   `tableSize` int(11) NOT NULL,
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `NetflowCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  `ifDescr` varchar(255) default NULL,
-  `direction` int(11) default NULL,
+  `collectorID` int(11) NOT NULL,
   `tableSize` int(11) NOT NULL,
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `NetflowMatchCriteria` (
-  `sessionID` int(11) NOT NULL,
+  `collectorID` int(11) NOT NULL,
   `srcAddressType` int(11) default '0',
   `srcAddress` varchar(255) default NULL,
   `srcAddressMask` int(11) default '0',
@@ -191,79 +193,68 @@ CREATE TABLE `NetflowMatchCriteria` (
   `maxPackets` int(11) default '0',
   `minBytes` int(11) default '0',
   `maxBytes` int(11) default '0',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `FlowOptions` (
-  `sessionID` int(11) NOT NULL,
+  `collectorID` int(11) NOT NULL,
   `ipProtocol` tinyint(1) default '1',
   `ipSourceAddress` tinyint(1) default '1',
   `ipDestinationAddress` tinyint(1) default '1',
   `tosByte` tinyint(1) default '1',
   `tcpUdpSourcePort` tinyint(1) default '1',
   `tcpUdpDestinationPort` tinyint(1) default '1',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `ProcessorCiscoCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `ProcessorHRCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
+  `collectorID` int(11) NOT NULL,
+  `processorDescr` varchar(255) NOT NULL default '',
   `snmpIndex` int(11) default '-1',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `ProcessorUCDCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `MemoryCiscoCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
+  `collectorID` int(11) NOT NULL,
+  `memoryDescr` varchar(255) NOT NULL default '',
   `snmpIndex` int(11) default '-1',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `MemoryHRCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
+  `collectorID` int(11) NOT NULL,
+  `memoryDescr` varchar(255) NOT NULL default '',
   `snmpIndex` int(11) default '-1',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `MemoryUCDCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
+  `collectorID` int(11) NOT NULL,
   `memoryType` int(11) default '-1',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `CustomOIDCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
+  `collectorID` int(11) NOT NULL,
   `valueUnits` varchar(255) NOT NULL default '',
-  PRIMARY KEY (`sessionID`)
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `CustomOIDCollectorOIDs` (
-  `sessionID` int(11) NOT NULL,
+  `collectorID` int(11) NOT NULL,
   `position` int(11) NOT NULL,
   `oidID` int(11) NOT NULL,
-  PRIMARY KEY (`sessionID`,`position`)
+  PRIMARY KEY (`collectorID`,`position`)
 );
 
 CREATE TABLE `CustomOIDTemplates` (
@@ -291,36 +282,29 @@ CREATE TABLE `CustomOIDTemplateOIDs` (
   PRIMARY KEY (`templateID`,`position`)
 );
 
+CREATE TABLE `IPAccountingActiveCollectors` (
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
+);
+
 CREATE TABLE `IPAccountingCheckpointCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `MACAccountingCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  `ifDescr` varchar(255) default NULL,
-  `direction` int(11) default NULL,
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `IPPrecAccountingCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  `ifDescr` varchar(255) default NULL,
-  `direction` int(11) default NULL,
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  PRIMARY KEY (`collectorID`)
 );
 
 CREATE TABLE `SNMPTableCollectors` (
-  `sessionID` int(11) NOT NULL,
-  `device` varchar(255) NOT NULL default '',
-  `pollInterval` bigint(20) default NULL,
-  `dataTypeID` int(11) NOT NULL default '0',
-  `snmpTypeID` int(11) NOT NULL default '0',
-  PRIMARY KEY (`sessionID`)
+  `collectorID` int(11) NOT NULL,
+  `dataType` int(11) NOT NULL default '0',
+  `snmpType` int(11) NOT NULL default '0',
+  PRIMARY KEY (`collectorID`)
 );

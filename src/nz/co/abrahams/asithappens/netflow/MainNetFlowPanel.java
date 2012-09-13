@@ -32,6 +32,9 @@ import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
 import nz.co.abrahams.asithappens.uiutil.PortsSelectorPanel;
 import javax.swing.*;
 import java.net.UnknownHostException;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
+import nz.co.abrahams.asithappens.storage.Direction;
+import nz.co.abrahams.asithappens.uiutil.GraphFactory;
 import org.apache.log4j.Logger;
 
 /**
@@ -42,9 +45,6 @@ import org.apache.log4j.Logger;
  * @author  mark
  */
 public class MainNetFlowPanel extends javax.swing.JPanel {
-    
-    /** Direction */
-    public static final String[] DIRECTIONS = { "In", "Out", "Both" };
     
     /** Logging provider */
     private static Logger logger = Logger.getLogger(MainNetFlowPanel.class);
@@ -74,7 +74,7 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
         pollField = new javax.swing.JTextField();
         pollUnitsLabel = new javax.swing.JLabel();
         directionLabel = new javax.swing.JLabel();
-        directionCombo = new JComboBox(MainNetFlowPanel.DIRECTIONS);
+        directionCombo = new JComboBox(Direction.getLabels());
         categorizeLabel = new javax.swing.JLabel();
         ipProtocolCheckBox = new javax.swing.JCheckBox();
         sourceAddressCheckBox = new javax.swing.JCheckBox();
@@ -92,11 +92,11 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
         add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 100, 20));
 
         pollField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        pollField.setText("2");
+        pollField.setText("2000");
         add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 10, 60, -1));
 
         pollUnitsLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        pollUnitsLabel.setText("s");
+        pollUnitsLabel.setText("ms");
         add(pollUnitsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 10, 20, 20));
 
         directionLabel.setText("Direction");
@@ -156,7 +156,7 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initComponentsFinish() {
-        portsSelectorPanel = new PortsSelectorPanel(true, ListSelectionModel.SINGLE_SELECTION);
+        portsSelectorPanel = new PortsSelectorPanel(SNMPAccessType.ReadWrite, ListSelectionModel.SINGLE_SELECTION);
         add(portsSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
     }
         
@@ -187,42 +187,41 @@ public class MainNetFlowPanel extends javax.swing.JPanel {
     /** Creates a new NetFlow graph. */
     private void netflowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_netflowButtonActionPerformed
         Device device;
+        int pollInterval;
         int ifIndex;
-        String portString;
+        Direction direction;
+        boolean storing;
+        String ifDescr;
         FlowOptions options;
         NetFlowSNMP snmp;
+        NetFlowCollectorDefinition definition;
         NetFlowCollector collector;
         DataSets data;
         TimeSeriesContext context;
         DataGraph graphFrame;
         
-        if ( ! portsSelectorPanel.getModel().hasEnumerated() ) {
-            ErrorHandler.modalError(this, "Please enumerate ports on a device and select a port",
-                    "No port selected");
+        if (!portsSelectorPanel.isPortSelected())
             return;
-        } else if ( portsSelectorPanel.rowsSelected().length == 0 ) {
-            ErrorHandler.modalError(this, "Please select a port", "No port selected");
-            return;
-        }
-        
-        device = portsSelectorPanel.getModel().getDevice();
+
+        device = portsSelectorPanel.getEnumeratedDevice();
+        pollInterval = Integer.parseInt(pollField.getText());
+        ifDescr = portsSelectorPanel.getIfDescription();
+        ifIndex = portsSelectorPanel.getIfIndex();
+        direction = Direction.getDirectionFromListPosition(directionCombo.getSelectedIndex());
+        storing = storeDataCheckBox.isSelected();
+
         try {
-            snmp = new NetFlowSNMP(device);
+            snmp = new NetFlowSNMP(device, ifIndex);
             if ( snmp.getNetFlowTopFlowsTopNTable() > 0 ) {
                 logger.debug("NetFlow Top-N table already exists");
                 if ( JOptionPane.showConfirmDialog(this, "A Netflow Top-N table already exists - overwrite this?",
                         "Confirm NetFlow Top-N table creation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.CANCEL_OPTION)
                     return;
             }
-            ifIndex = portsSelectorPanel.getIfIndex();
-            portString = portsSelectorPanel.getIfDescription();
             options = new FlowOptions(ipProtocolCheckBox.isSelected(), sourceAddressCheckBox.isSelected(),
                     destinationAddressCheckBox.isSelected(), tosCheckBox.isSelected(), sourcePortCheckBox.isSelected(), destinationPortCheckBox.isSelected());
-            
-            collector = new NetFlowCollector(snmp, ifIndex, portString, directionCombo.getSelectedIndex() + 1, Configuration.getPropertyInt("collector.netflow.table.size"), Integer.parseInt(pollField.getText()) * 1000, criteria, options);
-            data = new DataSets(DataType.NETFLOW, collector, device, Integer.parseInt(pollField.getText()) * 1000, portString, directionCombo.getSelectedIndex() + 1, null, storeDataCheckBox.isSelected());
-            context = new TimeSeriesContext(data);
-            graphFrame = new DataGraph(context);
+            definition = new NetFlowCollectorDefinition(null, device, pollInterval, storing, ifDescr, direction, criteria, options, Configuration.getPropertyInt("collector.netflow.table.size"));
+            GraphFactory.create(definition);
         } catch (DBException e) {
             ErrorHandler.modalError(this, "Please ensure that database is running and accessible",
                     "Error opening database connection", e);

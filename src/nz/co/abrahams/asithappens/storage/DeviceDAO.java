@@ -48,7 +48,7 @@ public class DeviceDAO {
      * userPrivProtocolWrite, userPrivKeyWrite, " + "FROM devices WHERE name =
      * ?";
      */
-    public static final String RETRIEVE_DEVICE = "SELECT snmpVersion, communityRead, communityWrite, "
+    public static final String RETRIEVE_DEVICE = "SELECT snmpVersionRead, snmpVersionWrite, communityRead, communityWrite, "
             + "userReadID, userWriteID, ipAddress, hardwareAddress "
             + "FROM devices WHERE name = ?";
     public static final String RETRIEVE_COMMUNITY_READ = "SELECT communityRead FROM devices WHERE name = ?";
@@ -57,7 +57,8 @@ public class DeviceDAO {
     public static final String RETRIEVE_USERID_WRITE = "SELECT userWriteID FROM devices WHERE name = ?";
     public static final String RETRIEVE_DEVICE_EXISTS = "SELECT count(*) FROM devices WHERE name = ?";
     public static final String RETRIEVE_DEVICES = "SELECT name FROM devices ORDER BY name";
-    public static final String UPDATE_SNMP_VERSION = "UPDATE devices SET snmpVersion = ? WHERE name = ?";
+    public static final String UPDATE_SNMP_VERSION_READ = "UPDATE devices SET snmpVersionRead = ? WHERE name = ?";
+    public static final String UPDATE_SNMP_VERSION_WRITE = "UPDATE devices SET snmpVersionWrite = ? WHERE name = ?";
     public static final String UPDATE_COMMUNITY_READ = "UPDATE devices SET communityRead = ? WHERE name = ?";
     public static final String UPDATE_COMMUNITY_WRITE = "UPDATE devices SET communityWrite = ? WHERE name = ?";
     public static final String UPDATE_IP_ADDRESS = "UPDATE devices SET ipAddress = ? WHERE name = ?";
@@ -84,7 +85,7 @@ public class DeviceDAO {
         this.connection = connection;
     }
 
-    public void create(Device device) throws DBException, UnknownHostException {
+    public void create(Device device) throws DBException {
         //PreparedStatement statement;
         //ResultSet results;
         //int deviceID;
@@ -100,7 +101,7 @@ public class DeviceDAO {
             hardwareAddressString = device.getEthernetAddress().toString();
         }
 
-        updateDevice(device.getName(), device.getSNMPVersion(),
+        updateDevice(device.getName(), device.getSNMPVersionRead(), device.getSNMPVersionWrite(),
                 device.getCommunityRead(), device.getCommunityWrite(),
                 device.getUsmUserRead(), device.getUsmUserWrite(),
                 ipAddressString, hardwareAddressString);
@@ -118,14 +119,14 @@ public class DeviceDAO {
     }
 
     public void updateDevice(Device device) throws DBException {
-        updateDevice(device.getName(), device.getSNMPVersion(),
+        updateDevice(device.getName(), device.getSNMPVersionRead(), device.getSNMPVersionWrite(),
                 device.getCommunityRead(), device.getCommunityWrite(),
                 device.getUsmUserRead(), device.getUsmUserWrite(),
                 null, null);
         //device.getAddress().toString(), device.getEthernetAddress().toString());
     }
 
-    public void updateDevice(String name, SNMPVersion snmpVersion,
+    public void updateDevice(String name, SNMPVersion snmpVersionRead, SNMPVersion snmpVersionWrite,
             String communityRead, String communityWrite,
             USMUser usmUserRead, USMUser usmUserWrite,
             String ipAddress, String hardwareAddress) throws DBException {
@@ -143,9 +144,16 @@ public class DeviceDAO {
                 statement.close();
             }
 
-            if (snmpVersion != null) {
-                statement = connection.prepareStatement(UPDATE_SNMP_VERSION);
-                statement.setInt(1, snmpVersion.getIndex());
+            if (snmpVersionRead != null) {
+                statement = connection.prepareStatement(UPDATE_SNMP_VERSION_READ);
+                statement.setInt(1, snmpVersionRead.getIndex());
+                statement.setString(2, name);
+                statement.executeUpdate();
+                statement.close();
+            }
+            if (snmpVersionWrite != null) {
+                statement = connection.prepareStatement(UPDATE_SNMP_VERSION_WRITE);
+                statement.setInt(1, snmpVersionWrite.getIndex());
                 statement.setString(2, name);
                 statement.executeUpdate();
                 statement.close();
@@ -226,7 +234,7 @@ public class DeviceDAO {
         }
     }
 
-    public Device retrieveDevice(String name, boolean useWrite) throws DBException, UnknownHostException, SNMPException {
+    public Device retrieveDevice(String name, SNMPAccessType authType) throws DBException, UnknownHostException {
         PreparedStatement statement;
         ResultSet results;
         String communityRead;
@@ -235,15 +243,8 @@ public class DeviceDAO {
         String hardwareAddress;
         USMUser userRead;
         USMUser userWrite;
-        SNMPVersion snmpVersion;
-        /*
-         * String userNameRead; USMLevel userLevelRead; USMAuthProtocol
-         * userAuthProtocolRead; String userAuthKeyRead; USMPrivProtocol
-         * userPrivProtocolRead; String userPrivKeyRead; String userNameWrite;
-         * USMLevel userLevelWrite; USMAuthProtocol userAuthProtocolWrite;
-         * String userAuthKeyWrite; USMPrivProtocol userPrivProtocolWrite;
-         * String userPrivKeyWrite;
-         */
+        SNMPVersion snmpVersionRead;
+        SNMPVersion snmpVersionWrite;
 
         try {
             statement = connection.prepareStatement(RETRIEVE_DEVICE);
@@ -258,7 +259,14 @@ public class DeviceDAO {
             if (results.wasNull()) {
                 hardwareAddress = null;
             }
-            snmpVersion = SNMPVersion.getSNMPVersion(results.getInt("snmpVersion"));
+            snmpVersionRead = SNMPVersion.getSNMPVersion(results.getInt("snmpVersionRead"));
+            if (results.wasNull()) {
+                snmpVersionRead = null;
+            }
+            snmpVersionWrite = SNMPVersion.getSNMPVersion(results.getInt("snmpVersionWrite"));
+            if (results.wasNull()) {
+                snmpVersionWrite = null;
+            }
 
             communityRead = results.getString("communityRead");
             if (results.wasNull()) {
@@ -273,8 +281,8 @@ public class DeviceDAO {
             if (communityRead == null && communityWrite == null && userRead == null && userWrite == null) {
                 return new Device(name);
             } else {
-                return new Device(name, snmpVersion, communityRead, communityWrite,
-                        userRead, userWrite, useWrite, ipAddress, hardwareAddress);
+                return new Device(name, snmpVersionRead, snmpVersionWrite, communityRead, communityWrite,
+                        userRead, userWrite, ipAddress, hardwareAddress);
             }
 
         } catch (SQLException e) {
@@ -299,7 +307,7 @@ public class DeviceDAO {
         }
     }
 
-    public USMUser retrieveDeviceReadUser(String name) throws DBException, SNMPException {
+    public USMUser retrieveDeviceReadUser(String name) throws DBException {
         USMUserDAO userDAO;
         USMUser user;
         Integer userID;
@@ -312,7 +320,7 @@ public class DeviceDAO {
             return userDAO.retrieve(userID.intValue());
     }
 
-    public USMUser retrieveDeviceWriteUser(String name) throws DBException, SNMPException {
+    public USMUser retrieveDeviceWriteUser(String name) throws DBException {
         USMUserDAO userDAO;
         USMUser user;
         Integer userID;

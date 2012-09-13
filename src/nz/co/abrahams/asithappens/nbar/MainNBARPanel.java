@@ -19,19 +19,14 @@
 
 package nz.co.abrahams.asithappens.nbar;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataSets;
-import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
+import javax.swing.JComboBox;
+import javax.swing.ListSelectionModel;
 import nz.co.abrahams.asithappens.core.Configuration;
-import nz.co.abrahams.asithappens.cartgraph.DataGraph;
-import nz.co.abrahams.asithappens.cartgraph.TimeSeriesContext;
-import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
+import nz.co.abrahams.asithappens.storage.Device;
+import nz.co.abrahams.asithappens.storage.Direction;
+import nz.co.abrahams.asithappens.uiutil.GraphFactory;
 import nz.co.abrahams.asithappens.uiutil.PortsSelectorPanel;
-import java.net.*;
-import javax.swing.*;
-import org.apache.log4j.Logger;
 
 /**
  * The graphical pane for creating NBAR graphs.  NBAR (Network-based application
@@ -46,17 +41,8 @@ import org.apache.log4j.Logger;
  */
 public class MainNBARPanel extends javax.swing.JPanel {
     
-    /** Direction */
-    public static final String[] DIRECTIONS = { "In", "Out", "Both" };
-    
-    /** Logging provider */
-    protected static Logger logger = Logger.getLogger(MainNBARPanel.class);
-    
     /** Ports selector interface */
     private PortsSelectorPanel portsSelectorPanel;
-
-    /** The device for which ports are enumerated */
-    //private Device device;
     
     /** Creates new MainNBARPanel form */
     public MainNBARPanel() {
@@ -76,7 +62,7 @@ public class MainNBARPanel extends javax.swing.JPanel {
         pollField = new javax.swing.JTextField();
         pollUnitsLabel = new javax.swing.JLabel();
         directionLabel = new javax.swing.JLabel();
-        directionCombo = new JComboBox(MainNBARPanel.DIRECTIONS);
+        directionCombo = new JComboBox(Direction.getLabels());
         storeDataCheckBox = new javax.swing.JCheckBox();
         nbarButton = new javax.swing.JButton();
 
@@ -86,11 +72,11 @@ public class MainNBARPanel extends javax.swing.JPanel {
         add(pollLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 100, 20));
 
         pollField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        pollField.setText("2");
+        pollField.setText("2000");
         add(pollField, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 10, 60, -1));
 
         pollUnitsLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        pollUnitsLabel.setText("s");
+        pollUnitsLabel.setText("ms");
         add(pollUnitsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 10, 20, 20));
 
         directionLabel.setText("Direction");
@@ -109,55 +95,29 @@ public class MainNBARPanel extends javax.swing.JPanel {
         add(nbarButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 620, 30));
     }// </editor-fold>//GEN-END:initComponents
     
-    public void initComponentsFinish() {
-        portsSelectorPanel = new PortsSelectorPanel(true, ListSelectionModel.SINGLE_SELECTION);
+    private void initComponentsFinish() {
+        portsSelectorPanel = new PortsSelectorPanel(SNMPAccessType.ReadWrite, ListSelectionModel.SINGLE_SELECTION);
         add(portsSelectorPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
     }
     
     /** Creates a new NBAR graph. */
     private void nbarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nbarButtonActionPerformed
         Device device;
-        int ifIndex;
-        String portString;
-        NBARSNMP snmp;
-        NBARCollector collector;
-        DataSets data;
-        TimeSeriesContext context;
-        DataGraph graphFrame;
+        String ifDescr;
+        Direction direction;
+        NBARCollectorDefinition definition;
         
-        if ( ! portsSelectorPanel.getModel().hasEnumerated() ) {
-            ErrorHandler.modalError(this, "Please enumerate ports on a device and select a port",
-                    "No port selected");
+        if (!portsSelectorPanel.isPortSelected())
             return;
-        } else if ( portsSelectorPanel.rowsSelected().length == 0 ) {
-            ErrorHandler.modalError(this, "Please select a port", "No port selected");
-            return;
-        }
+
+        device = portsSelectorPanel.getEnumeratedDevice();
+        ifDescr = portsSelectorPanel.getIfDescription();
+        direction = Direction.getDirectionFromListPosition(directionCombo.getSelectedIndex());
         
-        device = portsSelectorPanel.getModel().getDevice();
-        try {
-            /*
-            ifIndex = device.getPortsIndex()[((JList)(portsPane.getViewport().getView())).getSelectedIndex()];
-            portString = (String)((JList)portsPane.getViewport().getView()).getSelectedValue();
-             */
-            
-            ifIndex = portsSelectorPanel.getIfIndex();
-            portString = portsSelectorPanel.getIfDescription();
-            snmp = new NBARSNMP(device);
-            collector = new NBARCollector(snmp, Integer.parseInt(pollField.getText()) * 1000, ifIndex, portString, directionCombo.getSelectedIndex() + 1, Configuration.getPropertyInt("collector.nbar.table.size"));
-            data = new DataSets(DataType.NBAR, collector, device, Integer.parseInt(pollField.getText()) * 1000, portString, directionCombo.getSelectedIndex() + 1, null, storeDataCheckBox.isSelected());
-            context = new TimeSeriesContext(data);
-            graphFrame = new DataGraph(context);
-        } catch (DBException e) {
-            ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
-                    "Error opening database connection", e);
-        } catch (UnknownHostException e) {
-            ErrorHandler.modalError(null, "Please ensure that device name \"" + device.getName() + "\" is valid",
-                    "Unknown host " + device.getName(), e);
-        } catch (SNMPException e) {
-            ErrorHandler.modalError(null, "Please ensure that device name and community string are correct",
-                    "Cannot access SNMP service on device " + device.getName(), e);
-        }
+        definition = new NBARCollectorDefinition(null, device,
+                    Integer.parseInt(pollField.getText()), storeDataCheckBox.isSelected(),
+                    ifDescr, direction, Configuration.getPropertyInt("collector.nbar.table.size"));
+        GraphFactory.create(definition);
     }//GEN-LAST:event_nbarButtonActionPerformed
     
     

@@ -19,18 +19,15 @@
 
 package nz.co.abrahams.asithappens.response;
 
-import nz.co.abrahams.asithappens.core.DataType;
+import estadisticas.icmp.PingICMP;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.collectors.DataCollector;
+import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.storage.DataHeadings;
 import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
-import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
-import nz.co.abrahams.asithappens.collectors.DataCollector;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
 import org.apache.log4j.Logger;
-import estadisticas.icmp.PingICMP;
-import java.net.*;
-import java.util.*;
 
 /**
  * Collects response data from a device using ICMP.  This class only works when
@@ -42,7 +39,7 @@ import java.util.*;
  *
  * @author  mark
  */
-public class ResponseWindowsCollector extends DataCollector implements Runnable {
+public class ResponseWindowsCollector implements DataCollector, Runnable {
     
     /**
      * Response result inner class for this collector.  Used to pass response
@@ -73,6 +70,9 @@ public class ResponseWindowsCollector extends DataCollector implements Runnable 
     /** Logging provider */
     private static Logger logger = Logger.getLogger(ResponseWindowsCollector.class);
 
+    /** Collector definition */
+    ResponseCollectorDefinition definition;
+    
     /** time to wait for each poll response before giving up */
     private long timeout;
     /** address of target device */
@@ -92,8 +92,6 @@ public class ResponseWindowsCollector extends DataCollector implements Runnable 
     private int id;
     /** sequence number of ICMP packet required by library */
     private int sequence;
-    //private Double response;
-    //private HashMap<Integer,Double> responseMap;
     
     //private Integer indexInteger;
     /** thread that listens to and stores ICMP responses */
@@ -108,11 +106,11 @@ public class ResponseWindowsCollector extends DataCollector implements Runnable 
     }
     
     /** Creates a new instance of ResponseCollector */
-    public ResponseWindowsCollector(Device device, long pollInterval) throws UnknownHostException {
-        super(device, pollInterval, DataType.RESPONSE);
-        
-        deviceAddress = device.getResolvedAddress();
-        timeout = pollInterval / 2;
+    public ResponseWindowsCollector(ResponseCollectorDefinition definition) throws UnknownHostException {
+        //super(device, pollInterval, DataType.RESPONSE);
+        this.definition = definition;
+        deviceAddress = definition.getDevice().getResolvedAddress();
+        timeout = definition.getPollInterval() / 2;
         
         // PingICMP initializer
         initCollector();
@@ -127,7 +125,7 @@ public class ResponseWindowsCollector extends DataCollector implements Runnable 
             ping = new PingICMP();
             ping.begin();
         }
-        timeout = Math.min(pollInterval / 2, MAX_TIMEOUT);
+        timeout = Math.min(definition.getPollInterval() / 2, MAX_TIMEOUT);
         // Bug note: small chance of picking an id already assigned to another PingICMP object
         // In this case, the response times of both PingICMP objects seem to grow without bound
         id = (int)(Math.random() * 65535);
@@ -181,11 +179,11 @@ public class ResponseWindowsCollector extends DataCollector implements Runnable 
             if ( point[0] == null )
                 point[0] = new DataPoint(currentTime, timeout);
             sequence++;
-            return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+            return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
         } catch (InterruptedException e) {
             e.printStackTrace();
             point[0] = new DataPoint(currentTime, 0);
-            return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+            return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
         }
     }
     
@@ -232,37 +230,10 @@ public class ResponseWindowsCollector extends DataCollector implements Runnable 
         
     }
     
+    public ResponseCollectorDefinition getDefinition() {
+        return definition;
+    }    
     
-    /*
-    public DataPoint[] getNextValues() {
-        long startTime;
-        long responseTime;
-        DataPoint[] point;
-     
-        point = new DataPoint[1];
-        startTime = System.currentTimeMillis();
-     
-        try {
-            if ( deviceAddress.isReachable((int)timeout) ) {
-                responseTime = System.currentTimeMillis() - startTime;
-                //System.out.println("Response" + responseTime);
-            }
-            else {
-                responseTime = timeout;
-                //responseTime = System.currentTimeMillis() - startTime;
-                //System.out.println("Timeout " + responseTime);
-            }
-            point[0] = new DataPoint(startTime, (double)responseTime);
-     
-            return point;
-        }
-        catch (IOException e) {
-            point[0] = new DataPoint(startTime, timeout);
-        }
-        return point;
-    }
-     */
-
     /**
      * Decreases the collector count and stops the listener thread if there
      * are no more active collectors.

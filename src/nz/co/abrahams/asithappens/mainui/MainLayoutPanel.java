@@ -6,14 +6,15 @@
 
 package nz.co.abrahams.asithappens.mainui;
 
-import nz.co.abrahams.asithappens.storage.Layout;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
+import java.net.UnknownHostException;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
 import nz.co.abrahams.asithappens.core.DAOCreationException;
 import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.*;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
+import nz.co.abrahams.asithappens.storage.Layout;
 import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
-import javax.swing.*;
-import java.net.UnknownHostException;
 
 /**
  *
@@ -145,8 +146,16 @@ public class MainLayoutPanel extends javax.swing.JPanel {
     
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         try {
+            if (Layout.exists(saveField.getText())) {
+                if (JOptionPane.showConfirmDialog(null, "Are you sure you want to overwrite existing layout " + saveField.getText(),
+                 "Confirm session deletion", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+                    return;
+                }
+                Layout.deleteLayout(saveField.getText());
+            }
             Layout.saveLayout(saveField.getText());
             displayLayoutsList();
+            
         } catch (DBException e) {
             ErrorHandler.modalError(null, "Please ensure that database is running and accessible",
                     "Error accessing database", e);

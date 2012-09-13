@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import nz.co.abrahams.asithappens.collectors.SNMPTableInterface;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.snmputil.SNMPInterface;
 import nz.co.abrahams.asithappens.snmputil.SNMPTableRow;
 import nz.co.abrahams.asithappens.storage.Device;
 import org.apache.log4j.Logger;

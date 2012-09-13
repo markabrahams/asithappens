@@ -50,13 +50,17 @@ public class Device {
      */
     protected EthernetAddress ethernetAddress;
     /**
-     * SNMP version
+     * SNMP read-only version
      */
-    protected SNMPVersion snmpVersion;
+    protected SNMPVersion snmpVersionRead;
     /**
      * SNMP read-only community string
      */
     protected String communityRead;
+    /**
+     * SNMP read-write version
+     */
+    protected SNMPVersion snmpVersionWrite;
     /**
      * SNMP read-write community string
      */
@@ -69,10 +73,6 @@ public class Device {
      * SNMPv3 read-write user
      */
     protected USMUser usmUserWrite;
-    /**
-     * Indicates whether ro or rw community is to be used
-     */
-    protected boolean useWriteCommunity;
 
     /**
      * /** SNMP capability flag
@@ -88,50 +88,27 @@ public class Device {
     }
 
     /**
-     * Creates a new Device with SNMP capabiliity
-     *
-     * @param name device name
-     * @param community SNMP community string
-     */
-    /*
-     * public Device(String name, String communityRead, String communityWrite,
-     * boolean useWrite) throws UnknownHostException, SNMPException {
-     * this(name); this.communityRead = communityRead; this.communityWrite =
-     * communityWrite; this.useWriteCommunity = useWrite; }
-     */
-    /**
-     * Creates a new Device with SNMP capability
-     *
-     * @param name device name
-     * @param community SNMP community string
-     */
-    /*
-     * public Device(String name, USMUser usmUserRead, USMUser usmUserWrite,
-     * boolean useWrite) throws UnknownHostException, SNMPException {
-     * this(name); this.usmUserRead = usmUserRead; this.usmUserWrite =
-     * usmUserWrite; this.useWriteCommunity = useWrite; }
-     */
-    /**
      * Creates a new Device with given IP and MAC addresses
      *
      * @param address IP address of device
      * @param ethernetAddress MAC address of device
      */
-    public Device(String name, SNMPVersion snmpVersion,
+    public Device(String name, SNMPVersion snmpVersionRead, SNMPVersion snmpVersionWrite,
             String communityRead, String communityWrite,
             USMUser usmUserRead, USMUser usmUserWrite,
-            boolean useWrite, String address, String ethernetAddress)
-            throws UnknownHostException, SNMPException {
+            String address, String ethernetAddress)
+            throws UnknownHostException {
         this(name);
-        this.snmpVersion = snmpVersion;
+        this.snmpVersionRead = snmpVersionRead;
+        this.snmpVersionWrite = snmpVersionWrite;
         this.communityRead = communityRead;
         this.communityWrite = communityWrite;
         this.usmUserRead = usmUserRead;
         this.usmUserWrite = usmUserWrite;
-        this.useWriteCommunity = useWrite;
+        //this.useWriteCommunity = useWrite;
 
         if (address != null && !address.equals("null")) {
-            logger.info("Device address: " + address);
+            //logger.debug("Device address: " + address);
             this.address = InetAddress.getByName(address);
 
         }
@@ -189,23 +166,12 @@ public class Device {
     }
 
     /**
-     * Creates an interface to the SNMP access class.
-     *
-     * @param community SNMP community string
-     */
-    /*
-     * public SNMPAccess createSNMPInterface(String community) throws
-     * UnknownHostException, SNMPException { snmpCapable = false; snmpAccess =
-     * new SNMPAccess(getResolvedAddress(), community); //this.communityRead =
-     * community; snmpCapable = true; return snmpAccess; }
-     */
-    /**
      * Creates a read-only interface to the SNMP access class.
      *
      * @return read-only SNMP interface
      */
     public SNMPAccess createSNMPReadInterface() throws UnknownHostException, SNMPException {
-        if (snmpVersion == SNMPVersion.v1) {
+        if (snmpVersionRead == SNMPVersion.v1) {
             if ( communityRead != null ) {
                 return new SNMPAccess(getResolvedAddress(), communityRead);
             } else {
@@ -226,14 +192,14 @@ public class Device {
      * @return read-write SNMP interface
      */
     public SNMPAccess createSNMPWriteInterface() throws UnknownHostException, SNMPException {
-        if (snmpVersion == SNMPVersion.v1) {
+        if (snmpVersionWrite == SNMPVersion.v1) {
             if ( communityWrite != null ) {
                 return new SNMPAccess(getResolvedAddress(), communityWrite);
             } else {
                 throw new SNMPNoCredentialsException("No read-write community found");                
             }
         } else {
-            if ( usmUserRead != null ) {
+            if ( usmUserWrite != null ) {
                 return new SNMPAccess(getResolvedAddress(), usmUserWrite);
             } else {
                 throw new SNMPNoCredentialsException("No read-write user found");                
@@ -263,8 +229,12 @@ public class Device {
         return ethernetAddress;
     }
 
-    public SNMPVersion getSNMPVersion() {
-        return snmpVersion;
+    public SNMPVersion getSNMPVersionRead() {
+        return snmpVersionRead;
+    }
+
+    public SNMPVersion getSNMPVersionWrite() {
+        return snmpVersionWrite;
     }
 
     /**
@@ -289,35 +259,6 @@ public class Device {
         return usmUserWrite;
     }
 
-    /*
-     * public String retrieveReadCommunity() throws DBException { DeviceDAO
-     * deviceDAO; String community;
-     *
-     * deviceDAO = DAOFactory.getDeviceDAO(); community =
-     * deviceDAO.retrieveDeviceReadCommunity(name); deviceDAO.closeConnection();
-     * return community; }
-     *
-     * public String retrieveWriteCommunity() throws DBException { DeviceDAO
-     * deviceDAO; String community;
-     *
-     * deviceDAO = DAOFactory.getDeviceDAO(); community =
-     * deviceDAO.retrieveDeviceWriteCommunity(name);
-     * deviceDAO.closeConnection(); return community; }
-     *
-     * public USMUser retrieveReadUser() throws DBException, SNMPException {
-     * DeviceDAO deviceDAO; USMUser user;
-     *
-     * deviceDAO = DAOFactory.getDeviceDAO(); user =
-     * deviceDAO.retrieveDeviceReadUser(name); deviceDAO.closeConnection();
-     * return user; }
-     *
-     * public USMUser retrieveWriteUser() throws DBException, SNMPException {
-     * DeviceDAO deviceDAO; USMUser user;
-     *
-     * deviceDAO = DAOFactory.getDeviceDAO(); user =
-     * deviceDAO.retrieveDeviceWriteUser(name); deviceDAO.closeConnection();
-     * return user; }
-     */
     @Override
     public String toString() {
         return name;

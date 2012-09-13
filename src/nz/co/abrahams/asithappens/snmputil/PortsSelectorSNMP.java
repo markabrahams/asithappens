@@ -55,10 +55,9 @@ public class PortsSelectorSNMP extends SNMPInterface {
      * @throws UnknownHostException
      * @throws SNMPException
      */
-    public PortsSelectorSNMP(Device device, boolean useWriteAuth) throws UnknownHostException, SNMPException {
+    public PortsSelectorSNMP(Device device, SNMPAccessType accessType) throws UnknownHostException, SNMPException {
         super(device);
-        //if ( device.getCommunityRead() != null )
-        if ( useWriteAuth )
+        if ( accessType == SNMPAccessType.ReadWrite )
             snmpAccess = device.createSNMPWriteInterface();
         else
             snmpAccess = device.createSNMPReadInterface();

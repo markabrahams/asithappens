@@ -19,6 +19,7 @@ package nz.co.abrahams.asithappens.uiutil;
 import java.net.UnknownHostException;
 import nz.co.abrahams.asithappens.core.DAOFactory;
 import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.storage.DeviceDAO;
@@ -30,11 +31,12 @@ import nz.co.abrahams.asithappens.storage.DeviceDAO;
 public class DeviceSelectorModel {
 
     public String deviceName;
-    public boolean useWriteAuth;
+    
+    public SNMPAccessType snmpAccessType;
 
-    public DeviceSelectorModel(String deviceName, boolean useWriteAuth) {
+    public DeviceSelectorModel(String deviceName, SNMPAccessType snmpAccessType) {
         this.deviceName = deviceName;
-        this.useWriteAuth = useWriteAuth;
+        this.snmpAccessType = snmpAccessType;
     }
 
     public String getName() {
@@ -52,7 +54,7 @@ public class DeviceSelectorModel {
         return exists;
     }
 
-    public Device loadDevice() throws DBException, UnknownHostException, SNMPException {
+    public Device loadDevice() throws DBException, UnknownHostException {
 
         DeviceDAO deviceDAO;
         Device device;
@@ -61,7 +63,7 @@ public class DeviceSelectorModel {
         if (deviceDAO.retrieveDeviceExists(deviceName) == false) {
             device = new Device(deviceName);
         } else {
-            device = deviceDAO.retrieveDevice(deviceName, useWriteAuth);
+            device = deviceDAO.retrieveDevice(deviceName, snmpAccessType);
         }
         deviceDAO.closeConnection();
         return device;

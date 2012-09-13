@@ -19,15 +19,15 @@
 
 package nz.co.abrahams.asithappens.bandwidth;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
+import java.net.UnknownHostException;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
+import nz.co.abrahams.asithappens.snmputil.PortsSelectorSNMP;
+import nz.co.abrahams.asithappens.snmputil.SNMPAccessType;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
+import nz.co.abrahams.asithappens.storage.DataHeadings;
+import nz.co.abrahams.asithappens.storage.DataPoint;
 import org.apache.log4j.Logger;
-import java.net.UnknownHostException;
 
 /**
  * Collects traffic statistics for an interface of a device.  The class uses
@@ -42,7 +42,7 @@ import java.net.UnknownHostException;
  *
  * @author  mark
  */
-public class BandwidthCollector extends DataCollector {
+public class BandwidthCollector implements DataCollector {
     
     /** Number of directions */
     private static final int DIRECTIONS = 2;
@@ -56,6 +56,9 @@ public class BandwidthCollector extends DataCollector {
     /** Logging provider */
     private static Logger logger = Logger.getLogger(BandwidthCollector.class);
 
+    /** Collector definition */
+    BandwidthCollectorDefinition definition;
+    
     /** SNMP interface */
     private BandwidthSNMP snmp;
 
@@ -63,7 +66,7 @@ public class BandwidthCollector extends DataCollector {
     private boolean use64BitCounters;
     
     /** Indices into the ifTable specifying which interfaces to collect for */
-    private int[] ports;
+    private int[] ifIndices;
     
     /** Descriptions of the interfaces to collect for */
     private String[] portDescriptions;
@@ -77,36 +80,40 @@ public class BandwidthCollector extends DataCollector {
     /**
      * Creates a new BandwidthCollector.
      *
-     * @param device               the name or IP address of the target device
-     * @param ports                the set of interfaces from the ifTable to collect data about
-     * @param pollInterval         the polling interval in milliseconds
-     * @param prefer64BitCounters  use 64-bit counters if available
      */
-    public BandwidthCollector(BandwidthSNMP snmp, long pollInterval, int[] ports, String[] portDescriptions, boolean prefer64BitCounters) throws UnknownHostException, SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.BANDWIDTH);
+    public BandwidthCollector(BandwidthCollectorDefinition definition, BandwidthSNMP snmp) throws UnknownHostException, SNMPException {
+        this.definition = definition;
         this.snmp = snmp;
-        this.ports = ports;
-        this.portDescriptions = portDescriptions;
-        lastBytes = new long[DIRECTIONS][ports.length];
+        
+        initCollector();
+    }
+    
+    private void initCollector() throws SNMPException, UnknownHostException {
+        PortsSelectorSNMP portsSNMP;
+        
+        portsSNMP = new PortsSelectorSNMP(definition.getDevice(), SNMPAccessType.ReadOnly);
+        ifIndices = portsSNMP.getIfIndexArray(definition.getIfDescrs());
+
+        lastBytes = new long[DIRECTIONS][ifIndices.length];
         lastTime = new long[DIRECTIONS];
         
         for ( int dir = 0; dir < DIRECTIONS; dir++ ) {
-            for ( int i = 0; i < ports.length; i++ ) {
+            for ( int i = 0; i < ifIndices.length; i++ ) {
                 lastBytes[dir][i] = -1;
             }
         }
         use64BitCounters = false;
         
         try {
-            if ( prefer64BitCounters ) {
+            if ( definition.getPrefer64BitCounters() ) {
                 logger.debug("Attempting to create BandwidthCollector using 64-bit counters");
                 for ( int dir = 0; dir < DIRECTIONS; dir++ ) {
                     lastTime[dir] = System.currentTimeMillis() / 2;
-                    for (int i = 0; i < ports.length; i++) {
+                    for (int i = 0; i < ifIndices.length; i++) {
                         if ( dir == IN_DIRECTION)
-                            lastBytes[dir][i] = snmp.getIfHCInOctets(ports[i]);
+                            lastBytes[dir][i] = snmp.getIfHCInOctets(ifIndices[i]);
                         else
-                            lastBytes[dir][i] = snmp.getIfHCOutOctets(ports[i]);
+                            lastBytes[dir][i] = snmp.getIfHCOutOctets(ifIndices[i]);
                     }
                     lastTime[dir] += System.currentTimeMillis() / 2;
                 }
@@ -121,11 +128,11 @@ public class BandwidthCollector extends DataCollector {
                 logger.debug("Attempting to create BandwidthCollector using 32-bit counters");
                 for ( int dir = 0; dir < DIRECTIONS; dir++ ) {
                     lastTime[dir] = System.currentTimeMillis() / 2;
-                    for (int i = 0; i < ports.length; i++) {
+                    for (int i = 0; i < ifIndices.length; i++) {
                         if ( dir == IN_DIRECTION )
-                            lastBytes[dir][i] = snmp.getIfInOctets(ports[i]);
+                            lastBytes[dir][i] = snmp.getIfInOctets(ifIndices[i]);
                         else
-                            lastBytes[dir][i] = snmp.getIfOutOctets(ports[i]);
+                            lastBytes[dir][i] = snmp.getIfOutOctets(ifIndices[i]);
                     }
                     lastTime[dir] += System.currentTimeMillis() / 2;
                     logger.debug("Created BandwidthCollector using 32-bit counters");
@@ -154,21 +161,21 @@ public class BandwidthCollector extends DataCollector {
         DataPoint[] returnData;
         
         returnData = new DataPoint[DIRECTIONS];
-        newBytes = new long[DIRECTIONS][ports.length];
+        newBytes = new long[DIRECTIONS][ifIndices.length];
         for ( int dir = 0; dir < DIRECTIONS; dir++ ) {
             collectTime = System.currentTimeMillis();
             try {
-                for ( int i = 0; i < ports.length; i++ ) {
+                for ( int i = 0; i < ifIndices.length; i++ ) {
                     if ( use64BitCounters ) {
                         if ( dir == IN_DIRECTION )
-                            newBytes[dir][i] = snmp.getIfHCInOctets(ports[i]);
+                            newBytes[dir][i] = snmp.getIfHCInOctets(ifIndices[i]);
                         else
-                            newBytes[dir][i] = snmp.getIfHCOutOctets(ports[i]);
+                            newBytes[dir][i] = snmp.getIfHCOutOctets(ifIndices[i]);
                     } else {
                         if ( dir == IN_DIRECTION )
-                            newBytes[dir][i] = snmp.getIfInOctets(ports[i]);
+                            newBytes[dir][i] = snmp.getIfInOctets(ifIndices[i]);
                         else
-                            newBytes[dir][i] = snmp.getIfOutOctets(ports[i]);
+                            newBytes[dir][i] = snmp.getIfOutOctets(ifIndices[i]);
                     }
                     
                 }
@@ -176,7 +183,7 @@ public class BandwidthCollector extends DataCollector {
                 
                 wrap = false;
                 sum = 0;
-                for ( int i = 0; i < ports.length; i++ ) {
+                for ( int i = 0; i < ifIndices.length; i++ ) {
                     if ( newBytes[dir][i] < lastBytes[dir][i] )
                         wrap = true;
                     else
@@ -191,11 +198,15 @@ public class BandwidthCollector extends DataCollector {
                 
             } catch (SNMPException e) {
                 returnData[dir] = new DataPoint(collectTime);
-                logger.warn("Error collecting bandwith values from " + device);
+                logger.warn("Error collecting bandwith values from " + definition.getDevice());
             }
             
         }
-        return new DataCollectorResponse(returnData, new String[0], setCount);
+        return new DataCollectorResponse(returnData, new String[0], DIRECTIONS);
+    }
+    
+    public BandwidthCollectorDefinition getDefinition() {
+        return definition;
     }
     
     public boolean use64BitCounters() {

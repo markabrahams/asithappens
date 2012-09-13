@@ -20,16 +20,18 @@
 
 package nz.co.abrahams.asithappens.storage;
 
-import nz.co.abrahams.asithappens.core.DAOFactory;
-import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DAOCreationException;
-import nz.co.abrahams.asithappens.core.DBUtil;
-import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.cartgraph.DataGraphDAO;
-import nz.co.abrahams.asithappens.cartgraph.DataGraph;
-import java.util.*;
-import java.net.*;
+import java.net.UnknownHostException;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Vector;
+import nz.co.abrahams.asithappens.cartgraph.DataGraph;
+import nz.co.abrahams.asithappens.cartgraph.DataGraphDAO;
+import nz.co.abrahams.asithappens.core.DAOCreationException;
+import nz.co.abrahams.asithappens.core.DAOFactory;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.core.DBUtil;
+import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import org.apache.log4j.Logger;
 
 /**
@@ -38,14 +40,11 @@ import org.apache.log4j.Logger;
  */
 public class Layout {
     
-    /** Graph number */
-    //private static int graphID = 0;
-    
     /** Logging provider */
     protected static final Logger logger = Logger.getLogger(Layout.class);
     
-    /** Graph list */
-    private static Vector<DataGraph> list = new Vector();
+    /** List of current graphs */
+    private static ArrayList<DataGraph> list = new ArrayList();
     
     /** Creates a new instance of Layout */
     public Layout() {
@@ -59,31 +58,31 @@ public class Layout {
         list.remove(graph);
     }
     
+    public static ArrayList<DataGraph> getCurrentGraphs() {
+        return list;
+    }
+    
+    public static synchronized boolean currentIsEmpty() {
+        return list.isEmpty();
+    }
+    
     public static synchronized void saveLayout(String layout) throws DBException, UnknownHostException, DAOCreationException {
         LayoutDAO layoutDAO;
-        DataGraphDAO graphDAO;
-        DataGraph graph;
-        Iterator<DataGraph> iterator;
         
         layoutDAO = DAOFactory.getLayoutDAO();
         layoutDAO.create(layout, list.iterator());
         layoutDAO.closeConnection();
+                
+    }
+    
+    public static synchronized boolean exists(String layout) throws DBException, DAOCreationException {
+        LayoutDAO layoutDAO;
+        boolean exists;
         
-        /*
-        while ( iterator.hasNext() ) {
-            graph = iterator.next();
-            logger.info("Graph: " + graph.getContext().getData().getTitle());
-            if ( graph.getContext().getData().isCollector() ) {
-                logger.info("  (a collector)");
-                //collector = graph.getContext().getData().getCollector();
-                //graph.getContext().getData().getCollector().store(layout);
-                //graph.store(layout);
-                graphDAO.create(layout);
-            } else
-                logger.info("  (not a collector)");
-        }
-         */
-        
+        layoutDAO = DAOFactory.getLayoutDAO();
+        exists = layoutDAO.exists(layout);
+        layoutDAO.closeConnection();
+        return exists;
     }
     
     public static synchronized void loadLayout(String name) throws DBException, UnknownHostException, SNMPException, DAOCreationException {

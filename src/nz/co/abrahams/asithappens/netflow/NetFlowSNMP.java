@@ -28,6 +28,7 @@ import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.storage.DataSets;
 import org.apache.log4j.Logger;
 import java.net.UnknownHostException;
+import nz.co.abrahams.asithappens.storage.Direction;
 
 /**
  *
@@ -38,9 +39,12 @@ public class NetFlowSNMP extends SNMPInterface {
     /** Logging provider */
     private static Logger logger = Logger.getLogger(NetFlowSNMP.class);
 
-    /* SNMP interface */
-    //private SNMPAccess snmpAccess;
-
+    /** ifDescr of interface for collecting */
+    protected int ifIndex;
+    
+    /** direction for collection */
+    //protected Direction direction;
+    
     /**
      * Creates the SNMP interface for bandwidth collection.
      *
@@ -48,8 +52,10 @@ public class NetFlowSNMP extends SNMPInterface {
      * @throws UnknownHostException
      * @throws SNMPException
      */
-    public NetFlowSNMP(Device device) throws UnknownHostException, SNMPException {
+    public NetFlowSNMP(Device device, int ifIndex) throws UnknownHostException, SNMPException {
         super(device);
+        this.ifIndex = ifIndex;
+        //this.direction = direction;
         snmpAccess = device.createSNMPWriteInterface();
     }
 
@@ -63,7 +69,7 @@ public class NetFlowSNMP extends SNMPInterface {
     /**
      * @return the NetFlow MIB variable denoting the NetFlow status of an interface
      */
-    public int getNetFlowEnable(int ifIndex) throws SNMPException {
+    public int getNetFlowEnable() throws SNMPException {
         return snmpAccess.getMIBValueInteger(SNMPAccess.OID_cnfCINetflowEnable + "." + ifIndex);
     }
 
@@ -71,7 +77,7 @@ public class NetFlowSNMP extends SNMPInterface {
      * @param ifIndex   the interface for which to set the NetFlow status
      * @param direction the direction to set the NetFlow status
      */
-    public void setNetFlowEnable(int ifIndex, int direction) throws SNMPException {
+    public void setNetFlowEnable(int direction) throws SNMPException {
         snmpAccess.setMIBValueInteger(SNMPAccess.OID_cnfCINetflowEnable + "." + ifIndex, direction);
     }
 
@@ -226,6 +232,10 @@ public class NetFlowSNMP extends SNMPInterface {
             System.arraycopy(records, 0, partialRecords, 0, i);
             return partialRecords;
         }
+    }
+    
+    public int getIfIndex() {
+        return ifIndex;
     }
 
 }

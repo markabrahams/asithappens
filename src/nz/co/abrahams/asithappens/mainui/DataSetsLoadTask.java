@@ -110,7 +110,6 @@ public class DataSetsLoadTask extends SwingWorker<DataSets> implements LongTask 
         } catch (InterruptedException e) {
         } catch (ExecutionException e) {
         }
-        //ErrorHandler.threadDump();
     }
 
     /*
@@ -121,7 +120,6 @@ public class DataSetsLoadTask extends SwingWorker<DataSets> implements LongTask 
      */
     
     public int getProgress() {
-        //return -1;
         return taskProgress * LongTask.COMPLETED / taskLength;
     }
     
@@ -135,9 +133,7 @@ public class DataSetsLoadTask extends SwingWorker<DataSets> implements LongTask 
      *
      */
     public void loadData() throws DBException {
-        //long time;
         DataSet results;
-        //DatabaseAccess db;
         DataSetsDAO dataSetsDAO;
         DataSetDAO dataSetDAO;
         int sets;
@@ -146,7 +142,6 @@ public class DataSetsLoadTask extends SwingWorker<DataSets> implements LongTask 
         long intervalEnd;
         long intervalTime;
         int numValues;
-        //double pointValue;
         int fetchedMaximum;
         
         dataSets.setSessionID(sessionID);
@@ -155,12 +150,8 @@ public class DataSetsLoadTask extends SwingWorker<DataSets> implements LongTask 
         try {
             dataSetsDAO = DAOFactory.getDataSetsDAO();
             dataSetDAO = DAOFactory.getDataSetDAO();
+            dataSets.setAttributes(dataSetsDAO.retrieveSessionAttributes(sessionID));
             dataSets.setDataType(DataType.types[dataSetsDAO.retrieveSessionDataTypeID(sessionID)]);
-            dataSets.setDevice(new Device(dataSetsDAO.retrieveSessionDevice(sessionID)));
-            dataSets.setPortString(dataSetsDAO.retrieveSessionPort(sessionID));
-            dataSets.setPollInterval(dataSetsDAO.retrieveSessionPollInterval(sessionID));
-            dataSets.setTitle(dataSetsDAO.retrieveSessionTitle(sessionID));
-            dataSets.setDirection(dataSetsDAO.retrieveSessionDirection(sessionID));
             headings = DAOFactory.getDataHeadingsDAO().retrieve(sessionID);
             for ( int set = 0; set < headings.length; set++ ) {
                 dataSets.addSet(headings[set]);

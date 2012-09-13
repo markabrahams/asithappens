@@ -23,6 +23,7 @@ package nz.co.abrahams.asithappens.oid;
 import nz.co.abrahams.asithappens.snmputil.SNMPType;
 import nz.co.abrahams.asithappens.core.DBException;
 import java.sql.*;
+import nz.co.abrahams.asithappens.core.DBUtil;
 import org.apache.log4j.Logger;
 
 
@@ -37,6 +38,10 @@ public class CustomOIDDAO {
     public static final String CREATE = "INSERT INTO CustomOIDs (label, oid, oidType, description) VALUES (?,?,?,?)";
     
     public static final String RETRIEVE = "SELECT label, oid, oidType, description FROM CustomOIDs WHERE oidID = ?";
+    /**
+     * Collector deletion SQL statement
+     */
+    public static final String DELETE = "DELETE FROM CustomOIDs WHERE oidID = ?";
     
     /** Database connection */
     Connection connection;
@@ -89,6 +94,10 @@ public class CustomOIDDAO {
             logger.error("Problem retrieving CustomOID from database");
             throw new DBException("Problem retrieving CustomOID in database", e);
         }
+    }
+    
+    public void delete(int oidID) throws DBException {
+        DBUtil.deleteWithIntKey(connection, DELETE, oidID);
     }
     
     /**

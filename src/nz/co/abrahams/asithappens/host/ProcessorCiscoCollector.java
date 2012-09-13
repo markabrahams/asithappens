@@ -19,15 +19,11 @@
 
 package nz.co.abrahams.asithappens.host;
 
-import nz.co.abrahams.asithappens.core.DataType;
-import nz.co.abrahams.asithappens.storage.DataHeadings;
-import nz.co.abrahams.asithappens.storage.DataPoint;
-import nz.co.abrahams.asithappens.storage.Device;
 import nz.co.abrahams.asithappens.collectors.DataCollector;
 import nz.co.abrahams.asithappens.collectors.DataCollectorResponse;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
-import nz.co.abrahams.asithappens.core.DBException;
-import java.net.*;
+import nz.co.abrahams.asithappens.storage.DataHeadings;
+import nz.co.abrahams.asithappens.storage.DataPoint;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,11 +31,14 @@ import org.apache.log4j.Logger;
  *
  * @author  mark
  */
-public class ProcessorCiscoCollector extends DataCollector {
+public class ProcessorCiscoCollector implements DataCollector {
     
     /** Logging provider */
     private static Logger logger = Logger.getLogger(ProcessorCiscoCollector.class);
 
+    /** Collector definition */
+    ProcessorCiscoCollectorDefinition definition;
+        
     /** SNMP interface */
     private ProcessorCiscoSNMP snmp;
     
@@ -49,9 +48,9 @@ public class ProcessorCiscoCollector extends DataCollector {
      * @param device       the name or IP address of the target device
      * @param pollInterval the polling interval in milliseconds
      */
-    public ProcessorCiscoCollector(ProcessorCiscoSNMP snmp, long pollInterval) throws SNMPException {
-        super(snmp.getDevice(), pollInterval, DataType.PROCESSOR);
-
+    public ProcessorCiscoCollector(ProcessorCiscoCollectorDefinition definition, ProcessorCiscoSNMP snmp) throws SNMPException {
+        //super(snmp.getDevice(), pollInterval, DataType.PROCESSOR);
+        this.definition = definition;
         this.snmp = snmp;
         snmp.setExpedientCollection();
         
@@ -78,8 +77,12 @@ public class ProcessorCiscoCollector extends DataCollector {
             logger.warn("Timeout fetching processor load");
         }
         
-        return new DataCollectorResponse(point, new String[0], dataType.initialSetCount());
+        return new DataCollectorResponse(point, new String[0], definition.getInitialHeadings().length);
     }
+    
+    public ProcessorCiscoCollectorDefinition getDefinition() {
+        return definition;
+    }        
 
     /** Empty routine as there are no resources to release. */
     public void releaseCollector() {

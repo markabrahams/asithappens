@@ -1,4 +1,4 @@
-AsItHappens Usage Tips (version 0.59)
+AsItHappens Usage Tips (version 0.60)
 ======================
 
 Here are some usage tips for AsItHappens:
