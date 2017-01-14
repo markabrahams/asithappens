@@ -1,0 +1,10 @@
+build/
+db/
+dist/
+javadoc/
+nbproject/private/
+test/db/
+test/reports/
+sql/old
+
+*~

@@ -23,8 +23,10 @@ import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.Vector;
 import nz.co.abrahams.asithappens.collectors.*;
-import nz.co.abrahams.asithappens.core.*;
-import nz.co.abrahams.asithappens.oid.CustomOIDCollector;
+import nz.co.abrahams.asithappens.core.DAOCreationException;
+import nz.co.abrahams.asithappens.core.DAOFactory;
+import nz.co.abrahams.asithappens.core.DBException;
+import nz.co.abrahams.asithappens.core.DBUtil;
 import nz.co.abrahams.asithappens.snmputil.SNMPException;
 import org.apache.log4j.Logger;
 

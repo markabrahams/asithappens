@@ -13,6 +13,10 @@ Add option to force deletion of collecting session (suggested by Miguel Angel)
 Add CLI option to run it on a headless server (suggested by Cristian Rojas)
 Add option to use ifAlias instead of ifDescr in graph titles by default (suggested by Yuri)
 Add option to save current layout on exit (suggested by Yuri)
+Add sortable interface list (suggested by Travis)
+Add coloured timeout values (suggested by Shakeel Ahmad)
+Add current value to statistics (suggested by Shakeel Ahmad)
+Add summary statistics to the bottom of graph as option (suggested by Shakeel Ahmad)
 Implement CBWFQ MIB polling
 Implement HTTP response polling
 Add Debian package creation

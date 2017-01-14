@@ -19,15 +19,14 @@
 
 package nz.co.abrahams.asithappens.cartgraph;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import nz.co.abrahams.asithappens.core.DAOFactory;
 import nz.co.abrahams.asithappens.core.DBException;
-import nz.co.abrahams.asithappens.uiutil.ErrorHandler;
-import nz.co.abrahams.asithappens.uiutil.ColorCellRenderer;
-import nz.co.abrahams.asithappens.uiutil.SetDisplaysTableModel;
-import nz.co.abrahams.asithappens.uiutil.ColorCellEditor;
-import nz.co.abrahams.asithappens.uiutil.SetDisplay;
-import javax.swing.*;
-import javax.swing.table.*;
+import nz.co.abrahams.asithappens.uiutil.*;
 
 /**
  * Dialog that contains graph property options that can be adjusted by the user.
@@ -511,7 +510,7 @@ public class TimeSeriesOptionsDialog extends javax.swing.JDialog {
         }
     }
     
-    public void initializeTable() {
+    private void initializeTable() {
         JComboBox setDisplayCombo;
         
         setDisplaysTable = new JTable(new SetDisplaysTableModel(context));

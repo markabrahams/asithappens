@@ -1,3 +1,10 @@
+0.61 release
+============
+
+Bug fixes:
+Fixed Windows 64-bit launch failure
+Fixed start time reset when changing graph options
+
 0.60 release
 ============
 

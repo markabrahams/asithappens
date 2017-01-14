@@ -7,7 +7,7 @@
 # Section 1: User-supplied variables - change to match environment
 
 # Enter the path to your Java 1.5 executable
-JAVA_EXE=/opt/jdk1.6.0_01/jre/bin/java
+JAVA_EXE=/opt/jdk1.8.0_71/jre/bin/java
 
 # Enter the location of the unpacked install
 ASITHAPPENS_HOME=/opt/asithappens

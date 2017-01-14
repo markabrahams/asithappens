@@ -58,18 +58,14 @@ public class DataSets implements Runnable {
     protected static Logger logger = Logger.getLogger(DataSets.class);
     /** User-supplied title for data */
     //protected String title;
-    /** Data type */
-    //protected DataType dataType;
-    /** Y-axis value units */
-    //protected String valueUnits;
     /** Database session ID */
     protected int sessionID;
     /** Data collector */
     protected DataCollector collector;
     /** Indicates whether the DataSets object is currently collecting data */
     protected boolean collecting;
-    /** Flag for database storing */
-    //protected boolean storing;
+    /** Flag to indicate that the first data poll has been recorded in the database */
+    protected boolean startTimeDBSet;
     /** The time of the first collection event in the data sets */
     protected long startTime;
     /** The time of the final collection event in the data sets */
@@ -99,12 +95,8 @@ public class DataSets implements Runnable {
      */
       public DataSets(DataCollector collector)
             throws DBException, UnknownHostException, SNMPException {
-        //this.dataType = dataType;
-        //this.title = title;
         this.collector = collector;
-        //this.storing = storing;
         
-        //attributes = new DataAttributesCollector(collector.getDefinition(), title);
         attributes = collector.getDefinition();
         this.collecting = true;
 
@@ -157,7 +149,7 @@ public class DataSets implements Runnable {
     /**
      * Initializes data sets variables.
      */
-    protected void initializeDataSets() {
+    private void initializeDataSets() {
 
         data = new Vector();
         headings = new DataHeadings();
@@ -447,6 +439,11 @@ public class DataSets implements Runnable {
                 for (int set = 0; set < data.size(); set++) {
                     data.elementAt(set).addDataPoint(response.values[set]);
                 }
+                // Set first time if not already set
+                if ( startTime == 0 && data.size() > 0 && data.elementAt(0).size() > 0) {
+                    startTime = data.lastElement().lastElement().getTime();
+                }
+                finishTime = data.lastElement().lastElement().getTime();
                 // Remove data values that will not be displayed
                 for (int set = 0; set < data.size(); set++) {
                     if (data.elementAt(set).size() >= Configuration.getPropertyInt("data.points.collecting.maximum")) {
@@ -463,9 +460,10 @@ public class DataSets implements Runnable {
                 for (int set = 0; set < data.size(); set++) {
                     dataPointDAO.create(sessionID, set, data.elementAt(set).lastElement());
                 }
-                if (dataSetsDAO.retrieveSessionStartTime(sessionID) == 0)
+                if (!startTimeDBSet && dataSetsDAO.retrieveSessionStartTime(sessionID) == 0)
                 {
                     dataSetsDAO.updateSessionStartTime(sessionID, data.lastElement().lastElement().getTime());
+                    startTimeDBSet = true;
                 }
                 dataSetsDAO.updateSessionFinishTime(sessionID, data.lastElement().lastElement().getTime());
             }
