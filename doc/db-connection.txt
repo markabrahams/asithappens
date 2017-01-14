@@ -1,0 +1,13 @@
+To view the H2 DB:
+cd $ASITHAPPENS_HOME
+java -jar lib/h2.jar org.h2.tools.Console
+
+Then use these settings:
+Saved Settings: Generic H2 (Embedded)
+Setting Name: Generic H2 (Embedded)
+Driver Class: org.h2.Driver
+JDBC URL: jdbc:h2:db/asithappens
+Username: <leave blank>
+Password: <leave blank>
+
+You should then see a list of the AsItHappens DB tables.
